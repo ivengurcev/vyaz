@@ -1,0 +1,29 @@
+{
+    "name": "@farrage/core",
+    "version": "1.0.0",
+    "type": "module",
+    "bin": {
+        "farrage:build": "./builder/build.mjs",
+        "farrage:server": "./server/server.js"
+    },
+    "dependencies": {
+        "@auth/core": "^0.34.3",
+        "@hono/auth-js": "^1.1.1",
+        "@hono/node-server": "^1.19.11",
+        "autoprefixer": "^10.4.27",
+        "esbuild": "^0.27.3",
+        "esbuild-sass-plugin": "^3.7.0",
+        "esbuild-svgr-plugin": "^0.2.0",
+        "hono": "^4.12.7",
+        "picocolors": "^1.1.1",
+        "postcss": "^8.5.8",
+        "postcss-preset-env": "^11.2.0",
+        "prop-types": "^15.8.1",
+        "reneco-utils": "^0.1.1",
+        "sass-embedded": "^1.98.0"
+    },
+    "peerDependencies": {
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4"
+    }
+}
