@@ -4,13 +4,12 @@ import {dirname, join} from 'node:path';
 import { fileURLToPath } from 'url';
 import loadEnv from '../utils/loadEnv.mjs';
 import resolvePath from '../utils/resolvePath.mjs';
-import { createRequire } from 'node:module';
+// import { createRequire } from 'node:module';
 import reactPlugin from './reactPlugin.mjs';
 import { svgrPlugin } from 'esbuild-svgr-plugin';
 
 const __filename = fileURLToPath(import.meta.url),
-    __dirname = dirname(__filename),
-    require = createRequire(import.meta.url);
+    __dirname = dirname(__filename);
 
 
 export default async function buildSSR() {

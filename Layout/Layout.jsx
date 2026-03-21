@@ -1,3 +1,11 @@
+import PropTypes from 'prop-types';
+
+/**
+ * Формирует полный HTML-документ приложения для серверного рендера.
+ *
+ * @param {object} props
+ * @returns {JSX.Element}
+ */
 export default function ApplicationHTML({
     children, 
     scripts, 
@@ -22,3 +30,11 @@ export default function ApplicationHTML({
         </body>
     </html>);
 }
+
+ApplicationHTML.propTypes = {
+    children: PropTypes.node,
+    scripts: PropTypes.arrayOf(PropTypes.string),
+    styles: PropTypes.arrayOf(PropTypes.string),
+    title: PropTypes.string,
+    apiData: PropTypes.any,
+};

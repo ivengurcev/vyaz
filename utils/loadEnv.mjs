@@ -19,6 +19,7 @@ export default function loadEnv() {
     try {
         process.loadEnvFile();
         return {...defaults, ...process.env};
+    // eslint-disable-next-line no-unused-vars
     } catch (e) {
         console.log(pc.red('Не удалось загрузиьть файл .env'));
         return {};

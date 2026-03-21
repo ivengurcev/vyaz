@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-import pc from 'picocolors';
+// import pc from 'picocolors';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import getResult from 'reneco-utils/getResult.js';

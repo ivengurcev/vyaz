@@ -11,7 +11,7 @@ export default function reactPlugin() {
     return {
         name: 'react-fake',
         setup(build) {
-            build.onResolve({ filter: /^__realreact$/ }, props => {
+            build.onResolve({ filter: /^__realreact$/ }, () => {
                 return {
                     path: require.resolve('react')
                 }                

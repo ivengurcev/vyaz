@@ -60,7 +60,11 @@ const __filename = fileURLToPath(import.meta.url),
                     build.onEnd(async () => {
                         console.log(pc.yellow('---- сборка окончена -----'));
                     });                      
-                    build.onResolve({ filter: /(AppCore|SiteApp|CurrentRoute|routes)\.js$/}, async ({ path, importer, ...props}) => {
+                    build.onResolve({ filter: /(AppCore|SiteApp|CurrentRoute|routes)\.js$/}, async ({ 
+                        // path, 
+                        importer, 
+                        // ...props
+                    }) => {
                         if(basename(importer) === 'bootstrap.jsx') {
                             return ({
                                 // path: resolvePath(path),
