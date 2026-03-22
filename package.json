@@ -7,23 +7,25 @@
         "farrage:server": "./server/server.js"
     },
     "dependencies": {
-        "@auth/core": "^0.34.3",
-        "@hono/auth-js": "^1.1.1",
         "@hono/node-server": "^1.19.11",
-        "autoprefixer": "^10.4.27",
-        "esbuild": "^0.27.3",
+        "@svgr/core": "^8.1.0",
+        "@svgr/plugin-jsx": "^8.1.0",
+        "esbuild": "^0.27.4",
         "esbuild-sass-plugin": "^3.7.0",
-        "esbuild-svgr-plugin": "^0.2.0",
-        "hono": "^4.12.7",
+        "hono": "^4.12.8",
         "picocolors": "^1.1.1",
-        "postcss": "^8.5.8",
-        "postcss-preset-env": "^11.2.0",
-        "prop-types": "^15.8.1",
-        "reneco-utils": "^0.1.1",
         "sass-embedded": "^1.98.0"
     },
     "peerDependencies": {
+        "prop-types": "^15.8.1",
         "react": "^19.2.4",
-        "react-dom": "^19.2.4"
+        "react-dom": "^19.2.4",
+        "reneco-utils": "^0.1.1"
+    },
+    "devDependencies": {
+        "prop-types": "^15.8.1",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
+        "reneco-utils": "^0.1.1"
     }
 }

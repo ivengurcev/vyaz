@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import {dirname, join} from 'node:path';
 import { fileURLToPath } from 'url';
 
-const require = createRequire(import.meta.url),
+const require = createRequire(new URL('../package.json', import.meta.url)),
     __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
 

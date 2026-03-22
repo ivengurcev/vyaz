@@ -6,7 +6,7 @@ import loadEnv from '../utils/loadEnv.mjs';
 import resolvePath from '../utils/resolvePath.mjs';
 // import { createRequire } from 'node:module';
 import reactPlugin from './reactPlugin.mjs';
-import { svgrPlugin } from 'esbuild-svgr-plugin';
+import svgrPlugin from './svgrPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
@@ -44,7 +44,7 @@ export default async function buildSSR() {
             '.js': 'jsx',
             '.json': 'json',
             '.png': 'empty',
-            // '.svg': 'empty',
+            '.svg': 'empty',
             '.css': 'empty',
             '.scss': 'empty'            
         },

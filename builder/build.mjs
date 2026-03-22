@@ -2,7 +2,6 @@
 'use strict';
 
 import pc from 'picocolors';
-import { svgrPlugin } from 'esbuild-svgr-plugin';
 import {sassPlugin} from 'esbuild-sass-plugin';
 import { build, context } from 'esbuild';
 import parseArgv from '../utils/parseArgv.mjs';
@@ -10,6 +9,7 @@ import resolvePath from '../utils/resolvePath.mjs';
 import { fileURLToPath } from 'url';
 import { dirname, join, basename } from 'node:path';
 import loadEnv from '../utils/loadEnv.mjs';
+import svgrPlugin from './svgrPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename),
@@ -47,6 +47,7 @@ const __filename = fileURLToPath(import.meta.url),
         splitting: true,
         loader: { 
             '.png': 'file',
+            '.svg': 'file',
             '.css': 'file' 
         },
         // publicPath: `${server.rsc}/`,
