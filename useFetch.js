@@ -1,9 +1,5 @@
 import { useMemo, useState } from 'react';
 
-
-async function serverFetch(query) {
-    return await import('./server/fetch.js').then((m) => m.default(query));
-}
 export default function useFetch(path) {
     const [refresh, setRefresh] = useState(0),
         fetchQuery =  useMemo(() => {
@@ -11,8 +7,9 @@ export default function useFetch(path) {
                 ? `${path}&refresh=${refresh}` 
                 : `${path}?refresh=${refresh}`;
             return typeof window === 'undefined' 
-                ? serverFetch(curPath) 
-                : fetch(curPath);
+                ? Promise.resolve(null)
+                : fetch(curPath)
+                    .then(res => res.json());
         }, [path, refresh]),
         refetch = () => setRefresh((prev) => prev + 1);
     return [fetchQuery, refetch];

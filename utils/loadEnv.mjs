@@ -11,9 +11,11 @@ const __filename = fileURLToPath(import.meta.url),
         STATIC_PATH: '/public',
         LAYOUT_HTML: resolve(__dirname, '../Layout/Layout.jsx'),
         LAYOUT_APP: resolve(__dirname, '../Layout/Application.jsx'),
-        PAGE_TITLE: ''
+        PAGE_TITLE: '',
+        API_ROOT: '/api',
+        AUTH_URL: '/auth',
+        LAYOUT_AUTH: ''
     };
-
 
 export default function loadEnv() {
     try {

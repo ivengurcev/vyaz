@@ -20,7 +20,8 @@ const __filename = fileURLToPath(import.meta.url),
     {
         OUTDIR,
         LAYOUT_APP,
-        STATIC_PATH            
+        STATIC_PATH,
+        LAYOUT_AUTH            
     } = loadEnv(),
     APP_CORE = join(dirname(__dirname), 'Layout/ApplicationCore.jsx'),
     APP_CURRENT_ROUTE = join(dirname(__dirname), 'Layout/CurrentRoute.jsx'),
@@ -36,11 +37,15 @@ const __filename = fileURLToPath(import.meta.url),
         logLevel: 'error',
         minify: isMinify,
         entryPoints: {
-            index: join(__dirname, 'bootstrap.jsx'),
+            index: join(__dirname, '__bootstrap.js'),
             routes: resolvePath('./routes.js'),
             SiteApp: resolvePath(LAYOUT_APP),
             AppCore: resolvePath(APP_CORE),
-            CurrentRoute : resolvePath(APP_CURRENT_ROUTE)            
+            CurrentRoute : resolvePath(APP_CURRENT_ROUTE),
+            ...(LAYOUT_AUTH ? {
+                Auth: resolvePath(LAYOUT_AUTH),
+                index_auth: join(__dirname, '__bootstrap_auth.js'),
+            } : {})         
         },
         outdir: join(resolvePath(OUTDIR), STATIC_PATH), 
         outbase: 'public',
@@ -61,12 +66,12 @@ const __filename = fileURLToPath(import.meta.url),
                     build.onEnd(async () => {
                         console.log(pc.yellow('---- сборка окончена -----'));
                     });                      
-                    build.onResolve({ filter: /(AppCore|SiteApp|CurrentRoute|routes)\.js$/}, async ({ 
+                    build.onResolve({ filter: /(Auth|AppCore|SiteApp|CurrentRoute|routes)\.js$/}, async ({ 
                         // path, 
                         importer, 
                         // ...props
                     }) => {
-                        if(basename(importer) === 'bootstrap.jsx') {
+                        if(['__bootstrap.js', '__bootstrap_auth.js'].includes(basename(importer))) {
                             return ({
                                 // path: resolvePath(path),
                                 external: true

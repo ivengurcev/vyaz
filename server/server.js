@@ -15,6 +15,8 @@ import resolvePath from '../utils/resolvePath.mjs';
 
 import loadEnv from '../utils/loadEnv.mjs';
 import { attachRouter } from './router.mjs';
+import { attachAPI } from './api.mjs';
+import { attachAuth } from './auth.mjs';
 
 await buildSSR();
 
@@ -43,12 +45,19 @@ app.use(`${STATIC_PATH}/*`, serveStatic({
 }));
 
 /**
+ * 
+ */
+await attachAuth(app);
+
+/**
+ * API
+ */
+await attachAPI(app);
+
+/**
  * Подключаем разные маршруты
  */
-
-
-
-attachRouter(app);
+await attachRouter(app);
 
 /**
  * Главный маршрут
@@ -63,27 +72,25 @@ app.get('/*', async (c) => {
         cTitle = c.get('currentRouteTitle'),
         ContentComponent = c.get('currentRoute'),
         location = new URL(c.req.url),
-        apiData = {
-            // [serverConfig.api + location.pathname + location.search]: await resolveAPI(serverConfig.api + location.pathname + location.search, c)
-        },
-        stream = renderToPipeableStream(createElement(Layout.default, {
+        content = createElement(AppCore.default, { // AppCore
+            path: location, 
+            // content: ContentComponent && createElement(ContentComponent),
+            // apiData
+        }, createElement(App.default, {
+            path: location
+        }, createElement(CurrentRoute.default, {
+            path: location, 
+            component: ContentComponent
+        }))),
+        stream = renderToPipeableStream(createElement(Layout.default, { // Layout(HTML)
             title: cTitle ? getResult(cTitle, PAGE_TITLE) : PAGE_TITLE,
             scripts: [join(PUBLIC_PATH, 'index.js')],
             styles: [
                 join(PUBLIC_PATH, 'routes.css'),
                 join(PUBLIC_PATH, 'SiteApp.css')
             ],
-            apiData
-        }, createElement(AppCore.default, {
-            path: location, 
-            // content: ContentComponent && createElement(ContentComponent),
-            apiData
-        }, createElement(App.default, {
-            path: location
-        }, createElement(CurrentRoute.default, {
-            path: location, 
-            component: ContentComponent
-        })))), '');
+            // apiData: await apiData
+        }, content), '');
     // console.log('---CUUUUU', CurrentRoute.default);
     stream.pipe(c.env.outgoing);
     return RESPONSE_ALREADY_SENT;

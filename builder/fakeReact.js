@@ -44,8 +44,8 @@ export {
     version
 } from '__realreact';
 export function useState(value) { return [value, () => {}] }
-export function useEffect(callback, changer) { callback?.() }
-export function useLayoutEffect(callback, changer) { callback?.() }
+export function useEffect(callback/*, changer*/) { callback?.() }
+export function useLayoutEffect(callback/*, changer*/) { callback?.() }
 export function useRef() { return {current: null} }
 export function useMemo(callback) { return callback?.() }
 export function useCallback(callback) { return callback}
