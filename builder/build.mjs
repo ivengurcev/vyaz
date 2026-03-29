@@ -10,18 +10,19 @@ import { fileURLToPath } from 'url';
 import { dirname, join, basename } from 'node:path';
 import loadEnv from '../utils/loadEnv.mjs';
 import svgrPlugin from './svgrPlugin.mjs';
+import getConfigPlugin from './configPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename),
     KEY_WATCH = '--watch', 
     KEY_MINIFY = '--minify',
-    KEY_SOURCEMAPS = '--sourcemap',    
+    KEY_SOURCEMAPS = '--sourcemap',   
     pArgs = parseArgv(process.argv, [KEY_WATCH]),
     {
-        OUTDIR,
-        LAYOUT_APP,
+        OUTDIR,    
         STATIC_PATH,
-        LAYOUT_AUTH            
+        LAYOUT_APP,
+        LAYOUT_AUTH
     } = loadEnv(),
     APP_CORE = join(dirname(__dirname), 'Layout/ApplicationCore.jsx'),
     APP_CURRENT_ROUTE = join(dirname(__dirname), 'Layout/CurrentRoute.jsx'),
@@ -80,6 +81,7 @@ const __filename = fileURLToPath(import.meta.url),
                     });
                 }
             },
+            getConfigPlugin(),
             // resolveWorkspace,
             // selfResolve,
             // // cssPlugin, 

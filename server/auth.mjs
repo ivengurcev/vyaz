@@ -68,6 +68,26 @@ export async function attachAuth(app) {
             pages: {
                 signIn: `${AUTH_URL}${SIGNIN}`
             },
+            credentials: {
+                login: { label: 'Login', type: 'text' },
+                password: { label: 'Password', type: 'password' },
+            },
+            callbacks: {
+                async jwt({ token, user }) {
+                    if (user) {
+                        token.id = user.id
+                    }
+                    return token
+                },                
+                async session({ session, token }) {
+                    if (!session.user) {
+                        session.user = {}
+                    }
+                    // console.log('AUTH CALLBACK', session, token);
+                    session.user.id = token?.id
+                    return session
+                },
+            },            
             providers: [
                 CredentialsProvider({
                     id: 'signin',
@@ -83,10 +103,6 @@ export async function attachAuth(app) {
             ],
         })})
     );
-    // app.get(`${API_ROOT}/session`, verifyAuth(), async (c) => {
-    //     const authUser = await getAuthUser(c);
-    //     return c.json(authUser);
-    // });
     if(LAYOUT_AUTH.length > 0) {
         app.get(`${AUTH_URL}${SIGNIN}`, async (c) => {
             const [Layout, AppCore, LoginPage] = await Promise.all([

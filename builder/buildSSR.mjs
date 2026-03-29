@@ -7,6 +7,7 @@ import resolvePath from '../utils/resolvePath.mjs';
 // import { createRequire } from 'node:module';
 import reactPlugin from './reactPlugin.mjs';
 import svgrPlugin from './svgrPlugin.mjs';
+import getConfigPlugin from './configPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
@@ -17,7 +18,7 @@ export default function buildSSR() {
             OUTDIR,
             LAYOUT_HTML,
             LAYOUT_APP,
-            LAYOUT_AUTH            
+            // LAYOUT_AUTH            
         } = loadEnv(),
         APP_CORE = join(dirname(__dirname), 'Layout/ApplicationCore.jsx'),
         APP_CURRENT_ROUTE = join(dirname(__dirname), 'Layout/ServerCurrentRoute.jsx');
@@ -29,10 +30,10 @@ export default function buildSSR() {
             SiteApp: resolvePath(LAYOUT_APP),
             AppCore: resolvePath(APP_CORE),
             CurrentRoute : resolvePath(APP_CURRENT_ROUTE),
-            ...(LAYOUT_AUTH 
-                ? { Auth: resolvePath(LAYOUT_AUTH)} 
-                : {}
-            )
+            // ...(LAYOUT_AUTH 
+            //     ? { Auth: resolvePath(LAYOUT_AUTH)} 
+            //     : {}
+            // )
         },
         // alias: {
         //     'react': require.resolve('react'),
@@ -55,6 +56,7 @@ export default function buildSSR() {
         },
         plugins: [
             reactPlugin(),
+            getConfigPlugin(),
             svgrPlugin()
         ]
     });

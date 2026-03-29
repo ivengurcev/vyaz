@@ -2,8 +2,10 @@ import PropTypes from 'prop-types';
 import ApplicationContext from '../Context.js';
 import { SessionProvider, authConfigManager } from '@hono/auth-js/react';
 
+import {AUTH_BASE_URL} from '__config__';
+
 authConfigManager.setConfig({
-    basePath: '/auth'
+    basePath: AUTH_BASE_URL
 });
 
 function AuthProvider({children}) {
