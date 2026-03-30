@@ -14,19 +14,19 @@ import { SIGNIN } from '../getAuthUrl.js';
 import resolvePath from '../utils/resolvePath.mjs';
 
 const { 
-        PORT, 
         AUTH_SECRET, 
         AUTH_URL,
         OUTDIR,
         PAGE_TITLE,
         STATIC_PATH,
         LAYOUT_AUTH,
+        SERVER_URL,
         // API_ROOT
     } = loadEnv(),
     SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
 
 process.env.AUTH_SECRET = AUTH_SECRET;
-process.env.AUTH_URL = `http://localhost:${PORT}${AUTH_URL}`;
+process.env.AUTH_URL = `${SERVER_URL}${AUTH_URL}`;
 
 
 async function getAuthCallbacks() {
@@ -105,22 +105,19 @@ export async function attachAuth(app) {
     );
     if(LAYOUT_AUTH.length > 0) {
         app.get(`${AUTH_URL}${SIGNIN}`, async (c) => {
-            const [Layout, AppCore, LoginPage] = await Promise.all([
+            const [Layout] = await Promise.all([
                     import(join(SSR_DIR, 'Layout.js')),
-                    import(join(SSR_DIR, 'AppCore.js')),
-                    import(join(SSR_DIR, 'Auth.js'))
+                    // import(join(SSR_DIR, 'AppCore.js')),
+                    // import(join(SSR_DIR, 'Auth.js'))
                 ]), 
                 stream = renderToPipeableStream(createElement(Layout.default, {
                     title: `${PAGE_TITLE}: Авторизация`,
                     scripts: [join(STATIC_PATH, 'index_auth.js')],
                     styles: [join(STATIC_PATH, 'Auth.css')],                
-                }, createElement(AppCore.default, {}, 
-                    createElement(LoginPage.default, {}))
-                ), '');
+                }), '');
             stream.pipe(c.env.outgoing);
             return RESPONSE_ALREADY_SENT;
         });    
     }
-    app.use(`${AUTH_URL}/*`, authHandler());
     app.use(`${AUTH_URL}/*`, authHandler());
 }
