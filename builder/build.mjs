@@ -11,6 +11,7 @@ import { dirname, join, basename } from 'node:path';
 import loadEnv from '../utils/loadEnv.mjs';
 import svgrPlugin from './svgrPlugin.mjs';
 import getConfigPlugin from './configPlugin.mjs';
+import cssModulesPlugin from './cssModulesPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename),
@@ -85,8 +86,12 @@ const __filename = fileURLToPath(import.meta.url),
             // resolveWorkspace,
             // selfResolve,
             // // cssPlugin, 
+            // Handle SCSS/CSS modules first
+            cssModulesPlugin(),
+            // Handle SCSS/CSS         
             sassPlugin({
-                cssImports: true
+                filter: /\.(s[ac]ss|css)$/,
+                type: 'style', // Injects styles into the bundle as a <style> tag or CSS file
             }),
             svgrPlugin(),
             // staticImports

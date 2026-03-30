@@ -8,6 +8,7 @@ import resolvePath from '../utils/resolvePath.mjs';
 import reactPlugin from './reactPlugin.mjs';
 import svgrPlugin from './svgrPlugin.mjs';
 import getConfigPlugin from './configPlugin.mjs';
+import cssModulesPlugin from './cssModulesPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
@@ -57,7 +58,8 @@ export default function buildSSR() {
         plugins: [
             reactPlugin(),
             getConfigPlugin(),
-            svgrPlugin()
+            svgrPlugin(),
+            cssModulesPlugin(),
         ]
     });
 }
