@@ -91,7 +91,7 @@ const __filename = fileURLToPath(import.meta.url),
             // Handle SCSS/CSS         
             sassPlugin({
                 filter: /\.(s[ac]ss|css)$/,
-                type: 'style', // Injects styles into the bundle as a <style> tag or CSS file
+                // type: 'style', // Injects styles into the bundle as a <style> tag or CSS file
             }),
             svgrPlugin(),
             // staticImports
