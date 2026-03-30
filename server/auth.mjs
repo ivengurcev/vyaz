@@ -113,7 +113,10 @@ export async function attachAuth(app) {
                 stream = renderToPipeableStream(createElement(Layout.default, {
                     title: `${PAGE_TITLE}: Авторизация`,
                     scripts: [join(STATIC_PATH, 'index_auth.js')],
-                    styles: [join(STATIC_PATH, 'Auth.css')],                
+                    styles: [
+                        join(STATIC_PATH, 'SiteApp.css'), 
+                        join(STATIC_PATH, 'Auth.css')
+                    ],                
                 }), '');
             stream.pipe(c.env.outgoing);
             return RESPONSE_ALREADY_SENT;

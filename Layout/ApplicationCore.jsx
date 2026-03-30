@@ -1,12 +1,8 @@
 import PropTypes from 'prop-types';
 import ApplicationContext from '../Context.js';
-import { SessionProvider, authConfigManager } from '@hono/auth-js/react';
+import { SessionProvider } from '@hono/auth-js/react';
 
-import {AUTH_BASE_URL} from '__config__';
-
-authConfigManager.setConfig({
-    basePath: AUTH_BASE_URL
-});
+import '../authSetup.js';
 
 function AuthProvider({children}) {
     return typeof window === 'undefined'  
