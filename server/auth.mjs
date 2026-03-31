@@ -35,7 +35,7 @@ export function verifyAuthRedirect(isSecure) {
             isAuth = !!authUser?.token || !!authUser?.user;
         if (isSecure && !isAuth) {
             const loginUrl = `${AUTH_SIGNIN}?${new URLSearchParams({callbackUrl: c.req.url})}`;
-            return c.redirect(loginUrl, isAuth ? 302 : 403);
+            return c.redirect(loginUrl, 302);
         }
         c.set('authUser', authUser);
         await next();

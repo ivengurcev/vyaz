@@ -71,11 +71,12 @@ app.get('/*', async (c) => {
         ]),
         cTitle = c.get('currentRouteTitle'),
         ContentComponent = c.get('currentRoute'),
+        authUser = c.get('authUser')?.session?.user || null,
         location = new URL(c.req.url),
         content = createElement(AppCore.default, { // AppCore
             path: location, 
-            // content: ContentComponent && createElement(ContentComponent),
-            // apiData
+            component: ContentComponent,
+            authUser,
         }, createElement(App.default, {
             path: location
         }, createElement(CurrentRoute.default, {
@@ -89,9 +90,10 @@ app.get('/*', async (c) => {
                 join(PUBLIC_PATH, 'routes.css'),
                 join(PUBLIC_PATH, 'SiteApp.css')
             ],
-            // apiData: await apiData
+            apiData: {
+                authUser,
+            }
         }, content), '');
-    // console.log('---CUUUUU', CurrentRoute.default);
     stream.pipe(c.env.outgoing);
     return RESPONSE_ALREADY_SENT;
 });

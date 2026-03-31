@@ -43,7 +43,6 @@ export async function attachRouter(app) {
                     if(route.isPrivate) {
                         const authUser = c.get('authUser');
                         if (route.permissions?.length > 0 && !hasAccess?.(authUser, route)) {
-                            console.log('NO ACCESS', route.path);
                             return c.text('Недостаточно прав для доступа к странице', 403);
                         }
                     }
@@ -51,7 +50,6 @@ export async function attachRouter(app) {
                 },
                 async (c, next) => {
                     const curRouteComponent = await route.component();
-                    console.log('curRouteComponent', curRouteComponent);
                     c.set('currentRoute', curRouteComponent.default);
                     c.set('currentRouteTitle', route.title || '');
                     await next();    
