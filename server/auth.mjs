@@ -22,13 +22,12 @@ const env = loadEnv(),
         PAGE_TITLE,
         STATIC_PATH,
         LAYOUT_AUTH,
-        SERVER_URL,
         // API_ROOT
     } = env,
     SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
 
 process.env.AUTH_SECRET = AUTH_SECRET;
-process.env.AUTH_URL = `${SERVER_URL}${AUTH_URL}`;
+process.env.AUTH_TRUST_HOST = 'true';
 
 export function verifyAuthRedirect(isSecure) {
     return async (c, next) => {

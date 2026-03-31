@@ -25,12 +25,13 @@ AuthProvider.propTypes = {
 export default function ApplicationCore({
     children,
     component: initialComponent,
-    authUser,
+    authUser: initialAuthUser,
     path,
     router,
 }) {
     const [routeComponent, setRouteComponent] = useState(() => normalizeRouteComponent(initialComponent)),
-        [pathname, setPathname] = useState(path?.pathname || '/');
+        [pathname, setPathname] = useState(path?.pathname || '/'),
+        [authUser, setAuthUser] = useState(initialAuthUser || null);
 
     async function navigate(href, options = {}) {
         if (typeof window === 'undefined' || !router) {
@@ -91,6 +92,7 @@ export default function ApplicationCore({
             value={{
                 routeComponent,
                 authUser,
+                setAuthUser,
                 pathname,
                 navigate,
             }}

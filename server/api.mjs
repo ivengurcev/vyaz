@@ -39,7 +39,7 @@ function accessMiddleware(requirements = {}) {
         const {hasAccess} = await getAuthCallbacks();
 
         if (!hasAccess(authUser, requirements)) {
-            return c.json({ error: 'Forbidden' }, 403)
+            return c.json({ error: 'Доступ запрещён' }, 403)
         }
 
         c.set('authUser', authUser)
