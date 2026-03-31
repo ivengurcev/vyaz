@@ -3,6 +3,7 @@ import loadEnv from '../utils/loadEnv.mjs';
 const {
         API_ROOT,
         AUTH_URL,
+        AUTH_SIGNIN,
         STATIC_PATH
     } = loadEnv(),
     WORKSPACE_CONFIG = '@@config@@',
@@ -23,6 +24,7 @@ export default function getConfigPlugin() {
                 const config = {
                         AUTH_BASE_URL: AUTH_URL,
                         API_BASE_URL: API_ROOT,
+                        AUTH_SIGNIN,
                         STATIC_PATH
                     },
                     contents = `export const ${Object.keys(config).map(k => `${k} = ${JSON.stringify(config[k])}`).join(',\n\t')}`;

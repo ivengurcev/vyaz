@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url),
 export default function loadEnv() {
     try {
         process.loadEnvFile();
-        const PORT = process.env.PORT || 3000;
+        const PORT = process.env.PORT || 3000,
+            AUTH_URL = process.env.AUTH_URL || '/auth';
         return {
             ...{
                 PORT,
@@ -19,7 +20,8 @@ export default function loadEnv() {
                 LAYOUT_APP: resolve(__dirname, '../Layout/Application.jsx'),
                 PAGE_TITLE: '',
                 API_ROOT: '/api',
-                AUTH_URL: '/auth',
+                AUTH_URL,
+                AUTH_SIGNIN: AUTH_URL + '/signin',
                 LAYOUT_AUTH: '',
                 SERVER_URL: 'http://localhost:' + PORT                
             }, 

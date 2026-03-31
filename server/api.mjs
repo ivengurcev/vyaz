@@ -4,6 +4,13 @@ import { Hono } from 'hono';
 import { verifyAuth } from '@hono/auth-js';
 import loadEnv from '../utils/loadEnv.mjs';
 import picocolors from 'picocolors';
+import {
+    DELETE as METHOD_DELETE,
+    GET as METHOD_GET,
+    // PATCH as METHOD_PATCH,
+    POST as METHOD_POST,
+    PUT as METHOD_PUT
+} from './methods.js';
 
 const { API_ROOT } = loadEnv();
 
@@ -23,11 +30,6 @@ async function getAPIRoutes() {
 function jsonHandler(handler) {
     return async (c) => c.json(await handler(c));
 }
-
-export const METHOD_POST = 'POST',
-    METHOD_GET = 'GET',
-    METHOD_PUT = 'PUT',
-    METHOD_DELETE = 'DELETE';
 
 export async function attachAPI(app) {
     const api = new Hono(),

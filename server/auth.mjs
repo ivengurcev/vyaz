@@ -16,6 +16,7 @@ import resolvePath from '../utils/resolvePath.mjs';
 const { 
         AUTH_SECRET, 
         AUTH_URL,
+        AUTH_SIGNIN,
         OUTDIR,
         PAGE_TITLE,
         STATIC_PATH,
@@ -48,7 +49,7 @@ export function verifyAuthRedirect() {
         const authUser = await getAuthUser(c),
             isAuth = !!authUser?.token || !!authUser?.user;
         if (!isAuth) {
-            const loginUrl = `${c.get('authConfig').basePath}/signin?${new URLSearchParams({ callbackUrl: c.req.url })}`;
+            const loginUrl = `${AUTH_SIGNIN}?${new URLSearchParams({ callbackUrl: c.req.url })}`;
             return c.redirect(loginUrl, 302);
         }
         c.set('authUser', authUser);
@@ -66,7 +67,7 @@ export async function attachAuth(app) {
             return ({
             secret: AUTH_SECRET, // Secure secret for signing tokens
             pages: {
-                signIn: `${AUTH_URL}${SIGNIN}`
+                signIn: AUTH_SIGNIN
             },
             credentials: {
                 login: { label: 'Login', type: 'text' },

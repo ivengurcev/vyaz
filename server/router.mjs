@@ -4,6 +4,9 @@ import resolvePath from '../utils/resolvePath.mjs';
 import createRouter from '../router/createRouter.js';
 import { access } from 'node:fs/promises';
 import picocolors from 'picocolors';
+
+import { verifyAuthRedirect } from './auth.mjs';
+
 const { OUTDIR } = loadEnv(),
     SSR_DIR = join(resolvePath(OUTDIR), 'ssr'),
     router = {}; // createRouter(routes.default);
@@ -24,17 +27,25 @@ async function getRoutes() {
     }   
 }
 
+async function setupCurrentRoute(curRoute, c, next) {
+    const curRouteComponent = await curRoute.component();
+    // console.log(c.req.url, curRouteComponent, curRouteComponent.default);
+    c.set('currentRoute', curRouteComponent.default);
+    c.set('currentRouteTitle', curRoute.title || '');
+    await next();    
+}
+
 function checkRoutes() {
     return async (c, next) => {
         const curRoute = router?.current.resolve(new URL(c.req.url));
         if(!curRoute) {
             return c.notFound();
         }
-        const curRouteComponent = await curRoute.component();
-        // console.log(c.req.url, curRouteComponent, curRouteComponent.default);
-        c.set('currentRoute', curRouteComponent.default);
-        c.set('currentRouteTitle', curRoute.title || '');
-        await next();
+        if(curRoute.isPrivate) {
+            return verifyAuthRedirect()(c, () => setupCurrentRoute(curRoute, c, next));
+        } else {
+            return setupCurrentRoute(curRoute, c, next);
+        }
     }
 }
 
