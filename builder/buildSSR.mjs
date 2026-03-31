@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import loadEnv from '../utils/loadEnv.mjs';
 import resolvePath from '../utils/resolvePath.mjs';
 // import { createRequire } from 'node:module';
-import reactPlugin from './reactPlugin.mjs';
+// import reactPlugin from './reactPlugin.mjs';
 import svgrPlugin from './svgrPlugin.mjs';
 import getConfigPlugin from './configPlugin.mjs';
 import cssModulesPlugin from './cssModulesPlugin.mjs';
@@ -44,6 +44,12 @@ export default function buildSSR() {
         bundle: true,
         platform: 'node',
         format: 'esm',
+        external: [
+            'react',
+            'react/jsx-runtime',
+            'react-dom',
+            'react-dom/server',
+        ],
         outdir: join(resolvePath(OUTDIR), 'ssr'),
         sourcemap: false,
         splitting: true,
@@ -56,7 +62,7 @@ export default function buildSSR() {
             '.scss': 'empty'            
         },
         plugins: [
-            reactPlugin(),
+            // reactPlugin(),
             getConfigPlugin(),
             svgrPlugin(),
             cssModulesPlugin(),
