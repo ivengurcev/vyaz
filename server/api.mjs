@@ -1,9 +1,10 @@
 import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Hono } from 'hono';
-import { verifyAuth } from '@hono/auth-js';
+import { getAuthUser, verifyAuth } from '@hono/auth-js';
 import loadEnv from '../utils/loadEnv.mjs';
 import picocolors from 'picocolors';
+
 import {
     DELETE as METHOD_DELETE,
     GET as METHOD_GET,
@@ -11,6 +12,7 @@ import {
     POST as METHOD_POST,
     PUT as METHOD_PUT
 } from './methods.js';
+import getAuthCallbacks from '../utils/getAuthCallbacks.mjs';
 
 const { API_ROOT } = loadEnv();
 
@@ -31,15 +33,30 @@ function jsonHandler(handler) {
     return async (c) => c.json(await handler(c));
 }
 
+function accessMiddleware(requirements = {}) {
+    return async (c, next) => {
+        const authUser = await getAuthUser(c);
+        const {hasAccess} = await getAuthCallbacks();
+
+        if (!hasAccess(authUser, requirements)) {
+            return c.json({ error: 'Forbidden' }, 403)
+        }
+
+        c.set('authUser', authUser)
+        await next()
+    }
+}
+
+
 export async function attachAPI(app) {
     const api = new Hono(),
         apiRoutes = await getAPIRoutes();
     apiRoutes?.forEach(([route, opts, handler]) => {
-        const isPrivate = opts?.private,
+        const isPrivate = opts?.private || opts?.permissions?.length > 0 || opts?.roles?.length > 0,
             method = opts?.method || METHOD_GET,
             wrappedHandler = jsonHandler(handler);
         if (isPrivate) {
-            api.use(route, verifyAuth());
+            api.use(route, verifyAuth(), accessMiddleware(opts || {}));
         }
         switch (method) {
             case METHOD_POST:

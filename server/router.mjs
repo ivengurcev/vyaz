@@ -6,6 +6,7 @@ import { access } from 'node:fs/promises';
 import picocolors from 'picocolors';
 
 import { verifyAuthRedirect } from './auth.mjs';
+import getAuthCallbacks from '../utils/getAuthCallbacks.mjs';
 
 const { OUTDIR } = loadEnv(),
     SSR_DIR = join(resolvePath(OUTDIR), 'ssr'),
@@ -27,30 +28,36 @@ async function getRoutes() {
     }   
 }
 
-async function setupCurrentRoute(curRoute, c, next) {
-    const curRouteComponent = await curRoute.component();
-    // console.log(c.req.url, curRouteComponent, curRouteComponent.default);
-    c.set('currentRoute', curRouteComponent.default);
-    c.set('currentRouteTitle', curRoute.title || '');
-    await next();    
-}
-
-function checkRoutes() {
-    return async (c, next) => {
-        const curRoute = router?.current.resolve(new URL(c.req.url));
-        if(!curRoute) {
-            return c.notFound();
-        }
-        if(curRoute.isPrivate) {
-            return verifyAuthRedirect()(c, () => setupCurrentRoute(curRoute, c, next));
-        } else {
-            return setupCurrentRoute(curRoute, c, next);
-        }
-    }
-}
-
 
 export async function attachRouter(app) {
-    router.current = createRouter(await getRoutes());
-    app.get('/*', checkRoutes());
+    const routes = await getRoutes(),
+        {hasAccess} = await getAuthCallbacks();
+    router.current = createRouter(routes);
+    // console.log(routes);
+    routes.forEach(route => {
+        if(route.path) {
+            app.get(
+                route.path, 
+                verifyAuthRedirect(route.isPrivate),
+                (c, next) => {
+                    if(route.isPrivate) {
+                        const authUser = c.get('authUser');
+                        if (route.permissions?.length > 0 && !hasAccess?.(authUser, route)) {
+                            console.log('NO ACCESS', route.path);
+                            return c.text('Недостаточно прав для доступа к странице', 403);
+                        }
+                    }
+                    return next();
+                },
+                async (c, next) => {
+                    const curRouteComponent = await route.component();
+                    console.log('curRouteComponent', curRouteComponent);
+                    c.set('currentRoute', curRouteComponent.default);
+                    c.set('currentRouteTitle', route.title || '');
+                    await next();    
+                }
+            );
+        }
+    });
+    // app.get('/*', checkRoutes());
 }

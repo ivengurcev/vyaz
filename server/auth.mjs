@@ -1,5 +1,4 @@
 import { authHandler, initAuthConfig, verifyAuth, getAuthUser } from '@hono/auth-js';
-import { access } from 'node:fs/promises';
 import { join } from 'node:path';
 import CredentialsProvider from '@auth/core/providers/credentials';
 
@@ -8,10 +7,11 @@ import { RESPONSE_ALREADY_SENT } from '@hono/node-server/utils/response';
 import { createElement } from 'react';
 import {renderToPipeableStream} from 'react-dom/server';
 
-import picocolors from 'picocolors';
+// import picocolors from 'picocolors';
 import loadEnv from '../utils/loadEnv.mjs';
 import { SIGNIN } from '../getAuthUrl.js';
 import resolvePath from '../utils/resolvePath.mjs';
+import getAuthCallbacks from '../utils/getAuthCallbacks.mjs';
 
 const { 
         AUTH_SECRET, 
@@ -29,28 +29,13 @@ const {
 process.env.AUTH_SECRET = AUTH_SECRET;
 process.env.AUTH_URL = `${SERVER_URL}${AUTH_URL}`;
 
-
-async function getAuthCallbacks() {
-    const workspace = process.cwd(),
-        apiPath = join(workspace, 'auth.mjs');
-    try {
-        await access(apiPath);
-        const apiRoutes = await import(apiPath);
-        return apiRoutes;
-    } catch (e) {
-        console.error(e);
-        console.log(picocolors.red(`Не удалось загрузить файл ${apiPath}`));
-        return {};
-    }   
-}
-
-export function verifyAuthRedirect() {
+export function verifyAuthRedirect(isSecure) {
     return async (c, next) => {
         const authUser = await getAuthUser(c),
             isAuth = !!authUser?.token || !!authUser?.user;
-        if (!isAuth) {
-            const loginUrl = `${AUTH_SIGNIN}?${new URLSearchParams({ callbackUrl: c.req.url })}`;
-            return c.redirect(loginUrl, 302);
+        if (isSecure && !isAuth) {
+            const loginUrl = `${AUTH_SIGNIN}?${new URLSearchParams({callbackUrl: c.req.url})}`;
+            return c.redirect(loginUrl, isAuth ? 302 : 403);
         }
         c.set('authUser', authUser);
         await next();
@@ -59,7 +44,7 @@ export function verifyAuthRedirect() {
 
 export {verifyAuth};
 export async function attachAuth(app) {
-    const {registerAccount, loginAccount} = await getAuthCallbacks();
+    const {registerAccount, loginAccount, getPermissionsByRole, ROLES} = await getAuthCallbacks();
     app.use(
         '*', // Apply Auth.js to routes under /api/auth
         initAuthConfig((/*c*/) => {
@@ -77,6 +62,9 @@ export async function attachAuth(app) {
                 async jwt({ token, user }) {
                     if (user) {
                         token.id = user.id
+                        token.role = user.role || ROLES.USER
+                        token.permissions =
+                            user.permissions || getPermissionsByRole(token.role)
                     }
                     return token
                 },                
@@ -86,6 +74,10 @@ export async function attachAuth(app) {
                     }
                     // console.log('AUTH CALLBACK', session, token);
                     session.user.id = token?.id
+                    session.user.role = token?.role || ROLES.USER
+                    session.user.permissions =
+                        token?.permissions ||
+                        getPermissionsByRole(session.user.role)
                     return session
                 },
             },            
