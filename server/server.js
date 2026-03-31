@@ -12,6 +12,7 @@ import {renderToPipeableStream} from 'react-dom/server';
 import { join } from 'node:path';
 import buildSSR from '../builder/buildSSR.mjs';
 import resolvePath from '../utils/resolvePath.mjs';
+import normalizeRouteComponent from '../Layout/normalizeRouteComponent.js';
 
 import loadEnv from '../utils/loadEnv.mjs';
 import { attachRouter } from './router.mjs';
@@ -70,8 +71,9 @@ app.get('/*', async (c) => {
             import(join(SSR_DIR, 'CurrentRoute.js'))
         ]),
         cTitle = c.get('currentRouteTitle'),
-        ContentComponent = c.get('currentRoute'),
-        authUser = c.get('authUser')?.session?.user || null,
+        ContentComponent = normalizeRouteComponent(c.get('currentRoute')),
+        authData = c.get('authUser'),
+        authUser = authData?.user || authData?.session?.user || null,
         location = new URL(c.req.url),
         content = createElement(AppCore.default, { // AppCore
             path: location, 

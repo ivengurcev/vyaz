@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import { createElement, isValidElement, Suspense, use, useContext } from 'react';
+import { createElement, useContext } from 'react';
 import ApplicationContext from '../Context.js';
+import normalizeRouteComponent from './normalizeRouteComponent.js';
 
 /**
  * Разрешает лениво загруженный компонент и рендерит его на клиенте.
@@ -8,23 +9,18 @@ import ApplicationContext from '../Context.js';
  * @param {object} props
  * @returns {JSX.Element|null}
  */
-function CurrentComponent({query}) {
-    const resolved = query && use(query),
-        Component = resolved?.default || resolved;
+function CurrentComponent({component}) {
+    const Component = normalizeRouteComponent(component);
 
     if (!Component) {
         return null;
-    }
-
-    if (isValidElement(Component)) {
-        return Component;
     }
 
     return createElement(Component);
 }
 
 CurrentComponent.propTypes = {
-    query: PropTypes.any,
+    component: PropTypes.any,
 };
 
 /**
@@ -39,10 +35,9 @@ export default function CurrentRoute({
     // ..._props
 }) {
     const { routeComponent } = useContext(ApplicationContext) || {},
-        queryGetComponent = (routeComponent || component) && Promise.resolve(routeComponent || component);
-    return (<Suspense>
-        <CurrentComponent query={queryGetComponent} />
-    </Suspense>);
+        currentComponent = routeComponent || component;
+
+    return <CurrentComponent component={currentComponent} />;
 }
 
 CurrentRoute.propTypes = {

@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import ApplicationContext from '../Context.js';
 import { SessionProvider } from '@hono/auth-js/react';
+import normalizeRouteComponent from './normalizeRouteComponent.js';
 
 import '../authSetup.js';
 
@@ -28,7 +29,7 @@ export default function ApplicationCore({
     path,
     router,
 }) {
-    const [routeComponent, setRouteComponent] = useState(initialComponent),
+    const [routeComponent, setRouteComponent] = useState(() => normalizeRouteComponent(initialComponent)),
         [pathname, setPathname] = useState(path?.pathname || '/');
 
     async function navigate(href, options = {}) {
@@ -53,7 +54,7 @@ export default function ApplicationCore({
         }
 
         setPathname(targetUrl.pathname);
-        setRouteComponent(nextComponent?.default || null);
+        setRouteComponent(() => normalizeRouteComponent(nextComponent));
     }
 
     useEffect(() => {
@@ -71,7 +72,7 @@ export default function ApplicationCore({
             const nextComponent = await nextRoute.component();
 
             setPathname(window.location.pathname);
-            setRouteComponent(nextComponent?.default || null);
+            setRouteComponent(() => normalizeRouteComponent(nextComponent));
         }
 
         function handlePopState() {

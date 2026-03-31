@@ -1,6 +1,7 @@
 import { hydrateRoot } from 'react-dom/client';
 import createRouter from '../router/createRouter.js';
 import { createElement } from 'react';
+import normalizeRouteComponent from '../Layout/normalizeRouteComponent.js';
 
 function getInitialData() {
     const rootData = document.getElementById('api-data');
@@ -26,7 +27,7 @@ async function hydrateApplication() {
         initialData = getInitialData(),
         router = createRouter(routes.default),
         initialRoute = router.resolve(window.location),
-        InitialComponent = await initialRoute.component();
+        InitialComponent = normalizeRouteComponent(await initialRoute.component());
 
 
     // console.log('initialData', initialData);
@@ -43,13 +44,13 @@ async function hydrateApplication() {
         createElement(AppCore.default, { // AppCore
             path: location, 
             router,
-            component: InitialComponent?.default,
+            component: InitialComponent,
             authUser: initialData?.authUser || null,
         }, createElement(App.default, {
             path: location
         }, createElement(CurrentRoute.default, {
             path: location, 
-            component: InitialComponent?.default
+            component: InitialComponent
         })))
     );
 }

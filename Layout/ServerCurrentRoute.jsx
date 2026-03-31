@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
-import { Suspense } from 'react';
+import { createElement } from 'react';
+import normalizeRouteComponent from './normalizeRouteComponent.js';
 
 /**
  * Разрешает компонент маршрута на сервере и возвращает его разметку.
@@ -7,19 +8,22 @@ import { Suspense } from 'react';
  * @param {object} props
  * @returns {Promise<JSX.Element|null>}
  */
-async function CurrentComponent({query}) {
-    // console.log(use, query); 
-    // return <Component />;
-    const Content = await query;
-    return Content && <Content />;
+function CurrentComponent({component}) {
+    const Content = normalizeRouteComponent(component);
+
+    if (!Content) {
+        return null;
+    }
+
+    return createElement(Content);
 }
 
 CurrentComponent.propTypes = {
-    query: PropTypes.any,
+    component: PropTypes.any,
 };
 
 /**
- * Готовит серверный компонент маршрута к отрисовке через Suspense.
+ * Рендерит текущий маршрут на сервере в той же форме, что и на клиенте.
  *
  * @param {object} props
  * @returns {JSX.Element}
@@ -27,10 +31,7 @@ CurrentComponent.propTypes = {
 export default function CurrentRoute({
     component
 }) {
-    const queryGetComponent = component && Promise.resolve(component);
-    return (<Suspense>
-        <CurrentComponent query={queryGetComponent} />
-    </Suspense>);
+    return <CurrentComponent component={component} />;
 }
 
 CurrentRoute.propTypes = {
