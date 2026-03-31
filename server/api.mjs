@@ -8,7 +8,7 @@ import picocolors from 'picocolors';
 import {
     DELETE as METHOD_DELETE,
     GET as METHOD_GET,
-    // PATCH as METHOD_PATCH,
+    PATCH as METHOD_PATCH,
     POST as METHOD_POST,
     PUT as METHOD_PUT
 } from './methods.js';
@@ -67,6 +67,9 @@ export async function attachAPI(app) {
                 break;
             case METHOD_DELETE:
                 api.delete(route, wrappedHandler);
+                break;
+            case METHOD_PATCH:
+                api.patch(route, wrappedHandler);
                 break;
             default:
                 api.get(route, wrappedHandler);

@@ -13,7 +13,8 @@ import { SIGNIN } from '../getAuthUrl.js';
 import resolvePath from '../utils/resolvePath.mjs';
 import getAuthCallbacks from '../utils/getAuthCallbacks.mjs';
 
-const { 
+const env = loadEnv(),
+    { 
         AUTH_SECRET, 
         AUTH_URL,
         AUTH_SIGNIN,
@@ -23,7 +24,7 @@ const {
         LAYOUT_AUTH,
         SERVER_URL,
         // API_ROOT
-    } = loadEnv(),
+    } = env,
     SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
 
 process.env.AUTH_SECRET = AUTH_SECRET;
@@ -44,57 +45,14 @@ export function verifyAuthRedirect(isSecure) {
 
 export {verifyAuth};
 export async function attachAuth(app) {
-    const {registerAccount, loginAccount, getPermissionsByRole, ROLES} = await getAuthCallbacks();
+    const {init} = await getAuthCallbacks();
     app.use(
         '*', // Apply Auth.js to routes under /api/auth
-        initAuthConfig((/*c*/) => {
-            // console.log('AUTH', AUTH_SECRET, c.env.AUTH_SECRET, c.env.AUTH_URL);
-            return ({
-            secret: AUTH_SECRET, // Secure secret for signing tokens
-            pages: {
-                signIn: AUTH_SIGNIN
-            },
-            credentials: {
-                login: { label: 'Login', type: 'text' },
-                password: { label: 'Password', type: 'password' },
-            },
-            callbacks: {
-                async jwt({ token, user }) {
-                    if (user) {
-                        token.id = user.id
-                        token.role = user.role || ROLES.USER
-                        token.permissions =
-                            user.permissions || getPermissionsByRole(token.role)
-                    }
-                    return token
-                },                
-                async session({ session, token }) {
-                    if (!session.user) {
-                        session.user = {}
-                    }
-                    // console.log('AUTH CALLBACK', session, token);
-                    session.user.id = token?.id
-                    session.user.role = token?.role || ROLES.USER
-                    session.user.permissions =
-                        token?.permissions ||
-                        getPermissionsByRole(session.user.role)
-                    return session
-                },
-            },            
-            providers: [
-                CredentialsProvider({
-                    id: 'signin',
-                    name: 'Signin',
-                    authorize: loginAccount,
-                }),
-                CredentialsProvider({
-                    id: 'signup',
-                    name: 'Signup',
-                    authorize: registerAccount,                    
-                })
-                // Add other providers like Google, GitHub, etc., if needed
-            ],
-        })})
+        initAuthConfig((/*c*/) => init({
+            ...env, 
+            SSR_DIR,
+            CredentialsProvider
+        }))
     );
     if(LAYOUT_AUTH.length > 0) {
         app.get(`${AUTH_URL}${SIGNIN}`, async (c) => {
