@@ -22,6 +22,7 @@ export default function loadEnv() {
                 API_ROOT: '/api',
                 AUTH_URL,
                 AUTH_SIGNIN: AUTH_URL + '/signin',
+                ASSET_PUBLIC_BASE: '/uploads',
                 LAYOUT_AUTH: '',
                 SERVER_URL: 'http://localhost:' + PORT                
             }, 

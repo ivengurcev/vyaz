@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import buildSSR from '../builder/buildSSR.mjs';
 import resolvePath from '../utils/resolvePath.mjs';
 import normalizeRouteComponent from '../Layout/normalizeRouteComponent.js';
+import getServerCallbacks from '../utils/getServerCallbacks.mjs';
 
 import loadEnv from '../utils/loadEnv.mjs';
 import { attachRouter } from './router.mjs';
@@ -29,17 +30,22 @@ const workspace = process.cwd(),
     {
         PORT, 
         OUTDIR, 
+        ASSET_PUBLIC_BASE,
         STATIC_PATH,
         PAGE_TITLE
     } = env,
     SSR_DIR = join(resolvePath(OUTDIR), 'ssr'),
-    PUBLIC_PATH = STATIC_PATH;
+    PUBLIC_PATH = STATIC_PATH,
+    ASSET_PUBLIC_BASE_PATH = `/${String(ASSET_PUBLIC_BASE || '/uploads').replace(/^\/+|\/+$/g, '')}`;
 
 /** 
  *  статика
  */
 app.use(`/static/*`, serveStatic({
     root: `${workspace}`     
+}));
+app.use(`${ASSET_PUBLIC_BASE_PATH}/*`, serveStatic({
+    root: `${workspace}`
 }));
 app.use(`${STATIC_PATH}/*`, serveStatic({ 
     root: resolvePath(OUTDIR),  
@@ -75,10 +81,23 @@ app.get('/*', async (c) => {
         authData = c.get('authUser'),
         authUser = authData?.user || authData?.session?.user || null,
         location = new URL(c.req.url),
+        { getInitialData } = await getServerCallbacks(),
+        routeInitialData = typeof getInitialData === 'function'
+            ? await getInitialData({
+                c,
+                authUser,
+                location,
+            })
+            : {},
+        initialData = {
+            authUser,
+            ...(routeInitialData || {}),
+        },
         content = createElement(AppCore.default, { // AppCore
             path: location, 
             component: ContentComponent,
             authUser,
+            initialData,
         }, createElement(App.default, {
             path: location
         }, createElement(CurrentRoute.default, {
@@ -92,9 +111,7 @@ app.get('/*', async (c) => {
                 join(PUBLIC_PATH, 'routes.css'),
                 join(PUBLIC_PATH, 'SiteApp.css')
             ],
-            apiData: {
-                authUser,
-            }
+            apiData: initialData
         }, content), '');
     stream.pipe(c.env.outgoing);
     return RESPONSE_ALREADY_SENT;

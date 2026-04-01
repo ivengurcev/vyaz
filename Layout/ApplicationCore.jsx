@@ -26,6 +26,7 @@ export default function ApplicationCore({
     children,
     component: initialComponent,
     authUser: initialAuthUser,
+    initialData,
     path,
     router,
 }) {
@@ -93,6 +94,7 @@ export default function ApplicationCore({
                 routeComponent,
                 authUser,
                 setAuthUser,
+                initialData: initialData || {},
                 pathname,
                 navigate,
             }}
@@ -106,6 +108,7 @@ ApplicationCore.propTypes = {
     children: PropTypes.node,
     component: PropTypes.elementType,
     authUser: PropTypes.any,
+    initialData: PropTypes.any,
     path: PropTypes.any,
     router: PropTypes.any,
 };

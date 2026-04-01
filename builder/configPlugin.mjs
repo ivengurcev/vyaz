@@ -4,6 +4,7 @@ const {
         API_ROOT,
         AUTH_URL,
         AUTH_SIGNIN,
+        ASSET_PUBLIC_BASE,
         STATIC_PATH
     } = loadEnv(),
     WORKSPACE_CONFIG = '@@config@@',
@@ -24,6 +25,7 @@ export default function getConfigPlugin() {
                 const config = {
                         AUTH_BASE_URL: AUTH_URL,
                         API_BASE_URL: API_ROOT,
+                        ASSET_PUBLIC_BASE_URL: ASSET_PUBLIC_BASE,
                         AUTH_SIGNIN,
                         STATIC_PATH
                     },

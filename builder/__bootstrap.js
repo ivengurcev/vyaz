@@ -46,6 +46,7 @@ async function hydrateApplication() {
             router,
             component: InitialComponent,
             authUser: initialData?.authUser || null,
+            initialData,
         }, createElement(App.default, {
             path: location
         }, createElement(CurrentRoute.default, {
