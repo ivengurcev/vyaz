@@ -79,9 +79,16 @@ app.get('/*', async (c) => {
         cTitle = c.get('currentRouteTitle'),
         ContentComponent = normalizeRouteComponent(c.get('currentRoute')),
         authData = c.get('authUser'),
-        authUser = authData?.user || authData?.session?.user || null,
+        rawAuthUser = authData?.session?.user || authData?.user || null,
         location = new URL(c.req.url),
-        { getInitialData } = await getServerCallbacks(),
+        { getAuthUserData, getInitialData } = await getServerCallbacks(),
+        authUser = typeof getAuthUserData === 'function'
+            ? await getAuthUserData({
+                c,
+                authUser: rawAuthUser,
+                location,
+            })
+            : rawAuthUser,
         routeInitialData = typeof getInitialData === 'function'
             ? await getInitialData({
                 c,
