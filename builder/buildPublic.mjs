@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url),
 export default async function buildPublic({routes, ...settings}) {
     const {
         OUTDIR,
-        STATIC_PATH,
+        PUBLIC_PATH,
         LAYOUT_APP,
         LAYOUT_AUTH,
         isWatch,
@@ -44,7 +44,7 @@ export default async function buildPublic({routes, ...settings}) {
                 index_auth: join(__dirname, '__bootstrap_auth.js'),
             } : {})         
         },
-        outdir: join(resolvePath(OUTDIR), STATIC_PATH), 
+        outdir: join(resolvePath(OUTDIR), PUBLIC_PATH), 
         outbase: 'public',
         splitting: true,
         loader: { 

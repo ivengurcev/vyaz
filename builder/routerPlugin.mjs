@@ -23,7 +23,6 @@ export default function getRouterPlugin({
             build.onLoad({ filter: /.*$/, namespace: WORKSPACE_CONFIG }, async () => {
                     const contents = 'import createRouter from \'../router/createRouter\';\n' 
                     + `export default createRouter(${getStringRoute(routes)});`;
-                // console.log(contents);
                 return {
                     resolveDir: __dirname,
                     loader: 'js',

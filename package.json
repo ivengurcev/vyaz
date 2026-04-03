@@ -2,10 +2,6 @@
     "name": "@farrage/core",
     "version": "1.0.0",
     "type": "module",
-    "bin": {
-        "farrage:build": "./builder/build.mjs",
-        "farrage:server": "./server/server.js"
-    },
     "dependencies": {
         "@auth/core": "^0.35.0",
         "@hono/auth-js": "^1.1.1",

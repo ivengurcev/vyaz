@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { getAuthUser, verifyAuth } from '@hono/auth-js';
-import loadEnv from '../utils/loadEnv.mjs';
 // import picocolors from 'picocolors';
 
 import {
@@ -11,33 +10,31 @@ import {
     PUT as METHOD_PUT
 } from './methods.js';
 
-const { API_ROOT } = loadEnv();
 
 function jsonHandler(handler) {
     return async (c) => c.json(await handler(c));
 }
 
-function accessMiddleware(requirements = {}, {hasAccess}) {
+function accessMiddleware({hasAccess}) {
     return async (c, next) => {
         const authUser = await getAuthUser(c);
-        if (!hasAccess(authUser, requirements)) {
-            return c.json({ error: 'Доступ запрещён' }, 403)
+        if (hasAccess && !hasAccess(authUser)) {
+            return c.json({ error: 'Доступ запрещён' }, 403);
         }
-
         c.set('authUser', authUser)
         await next()
     }
 }
 
 
-export async function attachAPI(app, {api: apiRoutes, hasAccess}) {
+export async function attachAPI(app, {api: apiRoutes, API_ROOT}) {
     const api = new Hono();
     apiRoutes?.forEach(([route, opts, handler]) => {
         const isPrivate = opts?.private || opts?.permissions?.length > 0 || opts?.roles?.length > 0,
             method = opts?.method || METHOD_GET,
             wrappedHandler = jsonHandler(handler);
         if (isPrivate) {
-            api.use(route, verifyAuth(), accessMiddleware(opts || {}, {hasAccess}));
+            api.use(route, verifyAuth(), accessMiddleware(opts || {}));
         }
         switch (method) {
             case METHOD_POST:

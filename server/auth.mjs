@@ -1,5 +1,6 @@
 import { authHandler, initAuthConfig, verifyAuth, getAuthUser } from '@hono/auth-js';
 import { join } from 'node:path';
+import { URL } from 'node:url';
 import CredentialsProvider from '@auth/core/providers/credentials';
 
 // import { except } from 'hono/combine';
@@ -28,26 +29,27 @@ export {verifyAuth};
 export async function attachAuth(app, {
     auth,
     AUTH_URL,
+    SERVER_URL,
     AUTH_SIGNIN,
     LAYOUT_AUTH, 
-    STATIC_PATH, 
+    PUBLIC_PATH,
     OUTDIR, 
     PAGE_TITLE
 }) {
     process.loadEnvFile();
-    const SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
+    const SSR_DIR = join(resolvePath(OUTDIR), 'ssr'),
+        authEnvUrl = new URL(AUTH_URL, SERVER_URL).toString();
     // process.env.AUTH_SECRET = AUTH_SECRET;
     process.env.AUTH_TRUST_HOST = 'true';
-    process.env.AUTH_URL = AUTH_URL;    
+    process.env.AUTH_URL = authEnvUrl;
     app.use(
         '*', // Apply Auth.js to routes under /api/auth
-        initAuthConfig((/*c*/) => auth({
+        initAuthConfig(c => auth({
+            c,
             SSR_DIR,
             CredentialsProvider
         }))
     );
-
-    console.log(LAYOUT_AUTH, process.env.AUTH_URL);
 
     if(LAYOUT_AUTH.length > 0) {
         app.get(AUTH_SIGNIN, async (c) => {
@@ -56,10 +58,10 @@ export async function attachAuth(app, {
                 ]), 
                 stream = renderToPipeableStream(createElement(Layout.default, {
                     title: `${PAGE_TITLE}: Авторизация`,
-                    scripts: [join(STATIC_PATH, 'index_auth.js')],
+                    scripts: [join(PUBLIC_PATH, 'index_auth.js')],
                     styles: [
-                        join(STATIC_PATH, 'SiteApp.css'), 
-                        join(STATIC_PATH, 'Auth.css')
+                        join(PUBLIC_PATH, 'SiteApp.css'), 
+                        join(PUBLIC_PATH, 'Auth.css')
                     ],                
                 }), '');
             stream.pipe(c.env.outgoing);

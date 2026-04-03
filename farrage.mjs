@@ -8,15 +8,10 @@ import {renderToPipeableStream} from 'react-dom/server';
 import { join } from 'node:path';
 import buildSSR from './builder/buildSSR.mjs';
 import resolvePath from './builder/utils/resolvePath.mjs';
-import normalizeRouteComponent from './Layout/normalizeRouteComponent.js';
-import getServerCallbacks from './utils/getServerCallbacks.mjs';
-
-import loadEnv from './utils/loadEnv.mjs';
 import { attachRouter } from './server/router.mjs';
 import { attachAPI } from './server/api.mjs';
 import { attachAuth } from './server/auth.mjs';
 import pc from 'picocolors';
-import { resolve, dirname } from 'node:path';
 import parseArgv from 'reneco-utils/parseArgv.js';
 import buildPublic from './builder/buildPublic.mjs';
 import normalizeSettings from './utils/normalizeSettings.mjs';
@@ -122,26 +117,18 @@ export default async function farrage({
             ]),
             cTitle = c.get('currentRouteTitle'),
             ContentComponent = c.get('currentRoute'),
-            // authData = c.get('authUser'),
-            // rawAuthUser = authData?.session?.user || authData?.user || null,
             location = new URL(c.req.url),
-            // { getAuthUserData, getInitialData } = await getServerCallbacks(),
-            // authUser = typeof getAuthUserData === 'function'
-            //     ? await getAuthUserData({
-            //         c,
-            //         authUser: rawAuthUser,
-            //         location,
-            //     })
-            //     : rawAuthUser,
+            {session} = c.get('authUser') || {},
+            user = session?.user,
             routeInitialData = c.get('initialData'),
             initialData = {
-                // authUser,
+                user,
                 ...(routeInitialData || {}),
             },
             content = createElement(AppCore.default, { // AppCore
                 path: location, 
                 component: ContentComponent,
-                // authUser,
+                user,
                 initialData,
             }, createElement(App.default, {
                 path: location
@@ -153,7 +140,7 @@ export default async function farrage({
                 title: cTitle ? getResult(cTitle, PAGE_TITLE) : PAGE_TITLE,
                 scripts: [join(PUBLIC_PATH, 'index.js')],
                 styles: [
-                    join(PUBLIC_PATH, 'routes.css'),
+                    join(PUBLIC_PATH, 'index.css'),
                     join(PUBLIC_PATH, 'SiteApp.css')
                 ],
                 apiData: initialData
