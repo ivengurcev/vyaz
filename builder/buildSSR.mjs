@@ -2,45 +2,38 @@
 import { build } from 'esbuild';
 import {dirname, join} from 'node:path';
 import { fileURLToPath } from 'url';
-import loadEnv from '../utils/loadEnv.mjs';
-import resolvePath from '../utils/resolvePath.mjs';
+import resolvePath from './utils/resolvePath.mjs';
 // import { createRequire } from 'node:module';
 // import reactPlugin from './reactPlugin.mjs';
 import svgrPlugin from './svgrPlugin.mjs';
 import getConfigPlugin from './configPlugin.mjs';
 import cssModulesPlugin from './cssModulesPlugin.mjs';
+import getRoutesPlugin from './routesPlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
 
 
-export default function buildSSR() {
+export default function buildSSR({
+    routes, 
+    ...settings
+}) {
     const {
             OUTDIR,
             LAYOUT_HTML,
             LAYOUT_APP,
-            // LAYOUT_AUTH            
-        } = loadEnv(),
+        } = settings,
         APP_CORE = join(dirname(__dirname), 'Layout/ApplicationCore.jsx'),
         APP_CURRENT_ROUTE = join(dirname(__dirname), 'Layout/ServerCurrentRoute.jsx');
     return build({
         jsx: 'automatic',
         entryPoints: {
-            routes: resolvePath('./routes.js'),
+            routes: '__routes__',
             Layout: resolvePath(LAYOUT_HTML),
             SiteApp: resolvePath(LAYOUT_APP),
             AppCore: resolvePath(APP_CORE),
             CurrentRoute : resolvePath(APP_CURRENT_ROUTE),
-            // ...(LAYOUT_AUTH 
-            //     ? { Auth: resolvePath(LAYOUT_AUTH)} 
-            //     : {}
-            // )
-        },
-        // alias: {
-        //     'react': require.resolve('react'),
-        //     'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-        //     // 'react-dnd': require.resolve('react-dnd')
-        // },        
+        }, 
         bundle: true,
         platform: 'node',
         format: 'esm',
@@ -63,7 +56,8 @@ export default function buildSSR() {
         },
         plugins: [
             // reactPlugin(),
-            getConfigPlugin(),
+            getConfigPlugin(settings),
+            getRoutesPlugin({routes, ...settings}),
             svgrPlugin(),
             cssModulesPlugin(),
         ]

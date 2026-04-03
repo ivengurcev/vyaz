@@ -1,17 +1,14 @@
-import loadEnv from '../utils/loadEnv.mjs';
-
-const {
-        API_ROOT,
-        AUTH_URL,
-        AUTH_SIGNIN,
-        ASSET_PUBLIC_BASE,
-        STATIC_PATH
-    } = loadEnv(),
-    WORKSPACE_CONFIG = '@@config@@',
+const WORKSPACE_CONFIG = '@@config@@',
     CONFIG_FILTER = /^__config__$/,
     WORKSPACE = process.cwd();
 
-export default function getConfigPlugin() {
+export default function getConfigPlugin({
+    API_ROOT,
+    AUTH_URL,
+    AUTH_SIGNIN,
+    ASSET_PUBLIC_BASE,
+    STATIC_PATH 
+}) {
     return             {
         name: 'config-variables',
         setup(build) {

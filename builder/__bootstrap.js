@@ -1,7 +1,7 @@
 import { hydrateRoot } from 'react-dom/client';
-import createRouter from '../router/createRouter.js';
 import { createElement } from 'react';
 import normalizeRouteComponent from '../Layout/normalizeRouteComponent.js';
+import router from '__router__';
 
 function getInitialData() {
     const rootData = document.getElementById('api-data');
@@ -18,27 +18,15 @@ function getInitialData() {
 }
 
 async function hydrateApplication() {
-    const [AppCore, App, CurrentRoute, routes] = await Promise.all([
+    const [AppCore, App, CurrentRoute] = await Promise.all([
             import('./AppCore.js'),
             import('./SiteApp.js'),
-            import('./CurrentRoute.js'),
-            import('./routes.js')  
+            import('./CurrentRoute.js')
         ]),
         initialData = getInitialData(),
-        router = createRouter(routes.default),
         initialRoute = router.resolve(window.location),
         InitialComponent = normalizeRouteComponent(await initialRoute.component());
 
-
-    // console.log('initialData', initialData);
-    // hydrateRoot(
-    //     document.getElementById('root'),
-    //     <AppCore.default path={location} router={router}>
-    //         <App.default path={location}>
-    //             <CurrentRoute.default path={location} component={InitialComponent?.default} />
-    //         </App.default>
-    //     </AppCore.default>
-    // );
     hydrateRoot(
         document.getElementById('root'),
         createElement(AppCore.default, { // AppCore

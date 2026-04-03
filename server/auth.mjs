@@ -8,28 +8,10 @@ import { createElement } from 'react';
 import {renderToPipeableStream} from 'react-dom/server';
 
 // import picocolors from 'picocolors';
-import loadEnv from '../utils/loadEnv.mjs';
-import { SIGNIN } from '../getAuthUrl.js';
-import resolvePath from '../utils/resolvePath.mjs';
-import getAuthCallbacks from '../utils/getAuthCallbacks.mjs';
+import resolvePath from '../builder/utils/resolvePath.mjs';
 
-const env = loadEnv(),
-    { 
-        AUTH_SECRET, 
-        AUTH_URL,
-        AUTH_SIGNIN,
-        OUTDIR,
-        PAGE_TITLE,
-        STATIC_PATH,
-        LAYOUT_AUTH,
-        // API_ROOT
-    } = env,
-    SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
 
-process.env.AUTH_SECRET = AUTH_SECRET;
-process.env.AUTH_TRUST_HOST = 'true';
-
-export function verifyAuthRedirect(isSecure) {
+export function verifyAuthRedirect(isSecure, {AUTH_SIGNIN}) {
     return async (c, next) => {
         const authUser = await getAuthUser(c),
             isAuth = !!authUser?.token || !!authUser?.user;
@@ -43,22 +25,34 @@ export function verifyAuthRedirect(isSecure) {
 }
 
 export {verifyAuth};
-export async function attachAuth(app) {
-    const {init} = await getAuthCallbacks();
+export async function attachAuth(app, {
+    auth,
+    AUTH_URL,
+    AUTH_SIGNIN,
+    LAYOUT_AUTH, 
+    STATIC_PATH, 
+    OUTDIR, 
+    PAGE_TITLE
+}) {
+    process.loadEnvFile();
+    const SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
+    // process.env.AUTH_SECRET = AUTH_SECRET;
+    process.env.AUTH_TRUST_HOST = 'true';
+    process.env.AUTH_URL = AUTH_URL;    
     app.use(
         '*', // Apply Auth.js to routes under /api/auth
-        initAuthConfig((/*c*/) => init({
-            ...env, 
+        initAuthConfig((/*c*/) => auth({
             SSR_DIR,
             CredentialsProvider
         }))
     );
+
+    console.log(LAYOUT_AUTH, process.env.AUTH_URL);
+
     if(LAYOUT_AUTH.length > 0) {
-        app.get(`${AUTH_URL}${SIGNIN}`, async (c) => {
+        app.get(AUTH_SIGNIN, async (c) => {
             const [Layout] = await Promise.all([
                     import(join(SSR_DIR, 'Layout.js')),
-                    // import(join(SSR_DIR, 'AppCore.js')),
-                    // import(join(SSR_DIR, 'Auth.js'))
                 ]), 
                 stream = renderToPipeableStream(createElement(Layout.default, {
                     title: `${PAGE_TITLE}: Авторизация`,
