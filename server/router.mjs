@@ -19,6 +19,7 @@ export async function attachRouter(app, {routes, hasAccess, ...settings}) {
                     c.set('initialData', route.getData?.(c));
                     c.set('currentRoute', curRouteComponent.default);
                     c.set('currentRouteTitle', route.title || '');
+                    c.set('currentRouteComponentPath', route.componentPath || null);
                     await next();    
                 }
             );

@@ -11,6 +11,7 @@ import resolvePath from './builder/utils/resolvePath.mjs';
 import { attachRouter } from './server/router.mjs';
 import { attachAPI } from './server/api.mjs';
 import { attachAuth } from './server/auth.mjs';
+import collectRouteInitialData from './server/collectRouteInitialData.mjs';
 import pc from 'picocolors';
 import parseArgv from 'reneco-utils/parseArgv.js';
 import buildPublic from './builder/buildPublic.mjs';
@@ -98,11 +99,25 @@ export default async function farrage({
     }
 
     if(routes) {
-        const builtRoutes = (await import(ROUTES_SSR_PATH)).default;
+        const builtRoutes = (await import(ROUTES_SSR_PATH)).default,
+            routeConfigByPath = new Map(
+                routes
+                    .filter((route) => route?.path)
+                    .map((route) => [route.path, route])
+            ),
+            serverRoutes = builtRoutes.map((route) => {
+                const sourceRoute = routeConfigByPath.get(route.path);
+
+                return {
+                    ...route,
+                    componentPath: sourceRoute?.component || null,
+                    getData: sourceRoute?.getData,
+                };
+            });
         await attachRouter(app, {
             ...normalizedSettings,
             hasAccess,
-            routes: builtRoutes
+            routes: serverRoutes
         });
     }
     /**
@@ -120,9 +135,16 @@ export default async function farrage({
             location = new URL(c.req.url),
             {session} = c.get('authUser') || {},
             user = session?.user,
-            routeInitialData = c.get('initialData'),
+            routeInitialData = await Promise.resolve(c.get('initialData')),
+            routeComponentPath = c.get('currentRouteComponentPath'),
+            collectedInitialData = await collectRouteInitialData(app, c, {
+                API_ROOT: normalizedSettings.API_ROOT,
+                componentPath: routeComponentPath,
+                api,
+            }),
             initialData = {
                 user,
+                ...(collectedInitialData || {}),
                 ...(routeInitialData || {}),
             },
             content = createElement(AppCore.default, { // AppCore
