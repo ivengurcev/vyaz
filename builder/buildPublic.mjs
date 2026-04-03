@@ -8,6 +8,7 @@ import getConfigPlugin from './configPlugin.mjs';
 import cssModulesPlugin from './cssModulesPlugin.mjs';
 import { fileURLToPath } from 'url';
 import getRouterPlugin from './routerPlugin.mjs';
+import workspaceCorePlugin from './workspaceCorePlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
@@ -77,6 +78,7 @@ export default async function buildPublic({routes, ...settings}) {
                     });
                 }
             },
+            workspaceCorePlugin(),
             getRouterPlugin({routes, ...settings}),
             getConfigPlugin(settings),
             // resolveWorkspace,

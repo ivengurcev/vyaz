@@ -99,10 +99,15 @@ export default async function farrage({
     }
 
     if(routes) {
+        const builtRoutes = (await import(ROUTES_SSR_PATH)).default,
+            serverRoutes = builtRoutes.map((route, index) => ({
+                ...route,
+                hasAccess: routes[index]?.hasAccess || route.hasAccess,
+            }));
         await attachRouter(app, {
             ...normalizedSettings,
             hasAccess,
-            routes: (await import(ROUTES_SSR_PATH)).default
+            routes: serverRoutes
         });
     }
     /**

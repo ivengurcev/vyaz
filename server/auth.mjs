@@ -47,6 +47,7 @@ export async function attachAuth(app, {
         initAuthConfig(c => auth({
             c,
             SSR_DIR,
+            AUTH_SIGNIN,
             CredentialsProvider
         }))
     );

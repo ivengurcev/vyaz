@@ -9,6 +9,7 @@ import svgrPlugin from './svgrPlugin.mjs';
 import getConfigPlugin from './configPlugin.mjs';
 import cssModulesPlugin from './cssModulesPlugin.mjs';
 import getRoutesPlugin from './routesPlugin.mjs';
+import workspaceCorePlugin from './workspaceCorePlugin.mjs';
 
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename);
@@ -56,6 +57,7 @@ export default function buildSSR({
         },
         plugins: [
             // reactPlugin(),
+            workspaceCorePlugin(),
             getConfigPlugin(settings),
             getRoutesPlugin({routes, ...settings}),
             svgrPlugin(),

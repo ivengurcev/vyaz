@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import ApplicationContext from '../Context.js';
-import { SessionProvider } from '@hono/auth-js/react';
+import { SessionProvider, useSession } from '@hono/auth-js/react';
 import normalizeRouteComponent from './normalizeRouteComponent.js';
 
 import '../authSetup.js';
@@ -13,6 +13,62 @@ function AuthProvider({children}) {
 }
 AuthProvider.propTypes = {
     children: PropTypes.node,
+};
+
+function ApplicationStateProvider({
+    children,
+    routeComponent,
+    user,
+    setUser,
+    initialData,
+    pathname,
+    navigate,
+}) {
+    const session = useSession();
+
+    useEffect(() => {
+        const sessionUser = session?.data?.user || session?.user || null;
+
+        if (!sessionUser) {
+            return;
+        }
+
+        setUser((currentUser) => {
+            if (!currentUser) {
+                return sessionUser;
+            }
+
+            return {
+                ...currentUser,
+                ...sessionUser,
+                permissions:
+                    sessionUser.permissions || currentUser.permissions || [],
+            };
+        });
+    }, [session, setUser]);
+    return (
+        <ApplicationContext.Provider
+            value={{
+                routeComponent,
+                user,
+                setUser,
+                initialData: initialData || {},
+                pathname,
+                navigate,
+            }}
+        >
+            {children}
+        </ApplicationContext.Provider>
+    );
+}
+ApplicationStateProvider.propTypes = {
+    children: PropTypes.node,
+    routeComponent: PropTypes.any,
+    user: PropTypes.any,
+    setUser: PropTypes.func,
+    initialData: PropTypes.any,
+    pathname: PropTypes.string,
+    navigate: PropTypes.func,
 };
 
 
@@ -89,18 +145,16 @@ export default function ApplicationCore({
     }, [router]);
 
     return (<AuthProvider>
-        <ApplicationContext.Provider
-            value={{
-                routeComponent,
-                user,
-                setUser,
-                initialData: initialData || {},
-                pathname,
-                navigate,
-            }}
+        <ApplicationStateProvider
+            routeComponent={routeComponent}
+            user={user}
+            setUser={setUser}
+            initialData={initialData}
+            pathname={pathname}
+            navigate={navigate}
         >
             {children}
-        </ApplicationContext.Provider>
+        </ApplicationStateProvider>
     </AuthProvider>);
 }
 
