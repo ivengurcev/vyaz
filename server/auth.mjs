@@ -1,6 +1,5 @@
 import { authHandler, initAuthConfig, verifyAuth, getAuthUser } from '@hono/auth-js';
 import { join } from 'node:path';
-import { URL } from 'node:url';
 import CredentialsProvider from '@auth/core/providers/credentials';
 
 // import { except } from 'hono/combine';
@@ -29,7 +28,6 @@ export {verifyAuth};
 export async function attachAuth(app, {
     auth,
     AUTH_URL,
-    SERVER_URL,
     AUTH_SIGNIN,
     LAYOUT_AUTH, 
     PUBLIC_PATH,
@@ -37,16 +35,16 @@ export async function attachAuth(app, {
     PAGE_TITLE
 }) {
     process.loadEnvFile();
-    const SSR_DIR = join(resolvePath(OUTDIR), 'ssr'),
-        authEnvUrl = new URL(AUTH_URL, SERVER_URL).toString();
+    const SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
     // process.env.AUTH_SECRET = AUTH_SECRET;
     process.env.AUTH_TRUST_HOST = 'true';
-    process.env.AUTH_URL = authEnvUrl;
+    // process.env.AUTH_URL = authEnvUrl;
     app.use(
         '*', // Apply Auth.js to routes under /api/auth
         initAuthConfig(c => auth({
             c,
             SSR_DIR,
+            AUTH_URL,
             AUTH_SIGNIN,
             CredentialsProvider
         }))
