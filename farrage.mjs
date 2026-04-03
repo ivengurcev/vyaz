@@ -60,7 +60,6 @@ export default async function farrage({
         ROUTES_SSR_PATH = join(SSR_DIR, 'routes.js');
     // console.log(normalizedSettings)
     if(isBuildPublic) {
-        
         return await buildPublic({routes, auth, api, ...normalizedSettings});
     }
     if(isBuildSSR) {
@@ -99,15 +98,11 @@ export default async function farrage({
     }
 
     if(routes) {
-        const builtRoutes = (await import(ROUTES_SSR_PATH)).default,
-            serverRoutes = builtRoutes.map((route, index) => ({
-                ...route,
-                hasAccess: routes[index]?.hasAccess || route.hasAccess,
-            }));
+        const builtRoutes = (await import(ROUTES_SSR_PATH)).default;
         await attachRouter(app, {
             ...normalizedSettings,
             hasAccess,
-            routes: serverRoutes
+            routes: builtRoutes
         });
     }
     /**

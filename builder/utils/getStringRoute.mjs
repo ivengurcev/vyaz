@@ -6,14 +6,15 @@ export default function getStringRoutes(routes, isServer) {
         .map(route => '{\n' 
             + Object.keys(route).reduce((result, key) => {
                 switch (key) {
-                    case 'component': {
+                    case 'component': 
                         result.push(`\t${key}: () => import('${resolvePath(route[key])}')`);
                         break;
-                    } case 'hasAccess': {
+                    case 'hasAccess': 
+                    case 'getData': 
                         break;
-                    } default: {
+                    default: 
                         result.push(`\t${key}: ${JSON.stringify(route[key])}`);
-                    }
+                    
                 }
                 return result;
             }, []).join(',\n')
