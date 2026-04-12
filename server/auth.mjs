@@ -34,7 +34,7 @@ export async function attachAuth(app, {
     OUTDIR, 
     PAGE_TITLE
 }) {
-    process.loadEnvFile();
+    process.loadEnvFile(process.env.APP_ENV_FILE || '.env');
     const SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
     // process.env.AUTH_SECRET = AUTH_SECRET;
     process.env.AUTH_TRUST_HOST = 'true';

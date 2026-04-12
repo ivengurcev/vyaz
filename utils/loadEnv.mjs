@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url),
 
 export default function loadEnv() {
     try {
-        process.loadEnvFile();
+        process.loadEnvFile(process.env.APP_ENV_FILE || '.env');
         const PORT = process.env.PORT || 3000,
             AUTH_URL = process.env.AUTH_URL || '/auth';
         return {
@@ -30,7 +30,7 @@ export default function loadEnv() {
         };
     // eslint-disable-next-line no-unused-vars
     } catch (e) {
-        console.log(pc.red('Не удалось загрузиьть файл .env'));
+        console.log(pc.red(`Не удалось загрузить файл ${process.env.APP_ENV_FILE || '.env'}`));
         return {};
     }
 }
