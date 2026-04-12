@@ -18,7 +18,7 @@ function jsonHandler(handler) {
 function accessMiddleware(hasAccess, requirements = {}) {
     return async (c, next) => {
         const authUser = await getAuthUser(c);
-        if (!hasAccess(authUser, requirements)) {
+        if (hasAccess && !(await hasAccess(authUser, requirements))) {
             return c.json({ error: 'Доступ запрещён' }, 403);
         }
         c.set('authUser', authUser)
@@ -30,7 +30,11 @@ function accessMiddleware(hasAccess, requirements = {}) {
 export async function attachAPI(app, {api: apiRoutes, API_ROOT, hasAccess}) {
     const api = new Hono();
     apiRoutes?.forEach(([route, opts, handler]) => {
-        const isPrivate = opts?.private || opts?.permissions?.length > 0 || opts?.roles?.length > 0,
+        const isPrivate =
+                opts?.private ||
+                opts?.permissions?.length > 0 ||
+                opts?.permissionsAny?.length > 0 ||
+                opts?.roles?.length > 0,
             method = opts?.method || METHOD_GET,
             wrappedHandler = jsonHandler(handler);
         if (isPrivate) {

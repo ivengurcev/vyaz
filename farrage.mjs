@@ -20,15 +20,17 @@ import { access } from 'node:fs/promises';
 
 const KEY_BUILD_SSR = '--build-ssr',
     KEY_BUILD_PUBLIC = '--build-public',
+    KEY_SERVE = '--serve',
     KEY_WATCH = '--watch', 
     KEY_MINIFY = '--minify',
     KEY_SOURCEMAPS = '--sourcemap',   
-    pArgs = parseArgv(process.argv, [KEY_WATCH, KEY_MINIFY, KEY_SOURCEMAPS, KEY_BUILD_SSR, KEY_BUILD_PUBLIC]),
+    pArgs = parseArgv(process.argv, [KEY_WATCH, KEY_MINIFY, KEY_SOURCEMAPS, KEY_BUILD_SSR, KEY_BUILD_PUBLIC, KEY_SERVE]),
     isBuildSSR = !!pArgs[KEY_BUILD_SSR],
     isBuildPublic = !!pArgs[KEY_BUILD_PUBLIC],
     isWatch = !!pArgs[KEY_WATCH],
     isMinify = !!pArgs[KEY_MINIFY],
     isSourceMaps = !!pArgs[KEY_SOURCEMAPS],
+    isServe = !!pArgs[KEY_SERVE],
     workspace = process.cwd();
 
 
@@ -61,10 +63,13 @@ export default async function farrage({
         ROUTES_SSR_PATH = join(SSR_DIR, 'routes.js');
     // console.log(normalizedSettings)
     if(isBuildPublic) {
-        return await buildPublic({routes, auth, api, ...normalizedSettings});
+        await buildPublic({routes, auth, api, ...normalizedSettings});
     }
     if(isBuildSSR) {
         await buildSSR({routes, auth, api, ...normalizedSettings});
+    }
+    if(!isServe) {
+        return;
     }
     
     const app = new Hono();
