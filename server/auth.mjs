@@ -25,8 +25,36 @@ export function verifyAuthRedirect(isSecure, {AUTH_SIGNIN}) {
 }
 
 export {verifyAuth};
+function buildAuthEnvUrl(SERVER_URL, AUTH_URL) {
+    const baseUrl = new URL(SERVER_URL),
+        authPath = String(AUTH_URL || '/auth').replace(/^\/+/, '');
+
+    return new URL(authPath, `${baseUrl.origin}/`).toString().replace(/\/$/, '');
+}
+
+function isAbsoluteUrl(value) {
+    try {
+        new URL(value);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function configureAuthEnvUrl(SERVER_URL, AUTH_URL) {
+    if (process.env.SERVER_URL) {
+        process.env.AUTH_URL = buildAuthEnvUrl(SERVER_URL, AUTH_URL);
+        return;
+    }
+
+    if (process.env.AUTH_URL && !isAbsoluteUrl(process.env.AUTH_URL)) {
+        delete process.env.AUTH_URL;
+    }
+}
+
 export async function attachAuth(app, {
     auth,
+    SERVER_URL,
     AUTH_URL,
     AUTH_SIGNIN,
     LAYOUT_AUTH, 
@@ -38,7 +66,7 @@ export async function attachAuth(app, {
     const SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
     // process.env.AUTH_SECRET = AUTH_SECRET;
     process.env.AUTH_TRUST_HOST = 'true';
-    // process.env.AUTH_URL = authEnvUrl;
+    configureAuthEnvUrl(SERVER_URL, AUTH_URL);
     app.use(
         '*', // Apply Auth.js to routes under /api/auth
         initAuthConfig(c => auth({
