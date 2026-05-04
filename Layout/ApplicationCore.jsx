@@ -98,7 +98,7 @@ export default function ApplicationCore({
         const targetUrl = new URL(href, window.location.origin),
             nextRoute = router.resolve(targetUrl);
 
-        if (!nextRoute) {
+        if (!nextRoute?.component) {
             window.location.href = href;
             return;
         }
