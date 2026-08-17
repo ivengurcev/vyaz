@@ -121,6 +121,7 @@ export default async function farrage({
             });
         await attachRouter(app, {
             ...normalizedSettings,
+            auth,
             hasAccess,
             routes: serverRoutes
         });

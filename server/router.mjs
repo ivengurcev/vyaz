@@ -8,8 +8,10 @@ export async function attachRouter(app, {routes, hasAccess, ...settings}) {
                 async (c, next) => {
                     const {session} = c.get('authUser') || {},
                         user = session?.user,
-                        accessGranted = await hasAccess(user, route);
-                    if (hasAccess && !accessGranted) {
+                        accessGranted = hasAccess
+                            ? await hasAccess(user, route)
+                            : true;
+                    if (!accessGranted) {
                         return c.text('Недостаточно прав для доступа к странице', 403);
                     }
                     return next();

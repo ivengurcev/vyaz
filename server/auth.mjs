@@ -11,8 +11,31 @@ import {renderToPipeableStream} from 'react-dom/server';
 import resolvePath from '../builder/utils/resolvePath.mjs';
 
 
-export function verifyAuthRedirect(isSecure, {AUTH_SIGNIN}) {
+/**
+ * Создаёт middleware маршрута, получающий текущего пользователя при настроенном Auth.js.
+ *
+ * Публичные маршруты работают без auth-состояния, если workspace не подключил
+ * авторизацию. Приватные маршруты возвращают явную ошибку вместо запуска с
+ * отсутствующей конфигурацией.
+ *
+ * @param {boolean} isSecure
+ * @param {object} settings
+ * @param {string} settings.AUTH_SIGNIN
+ * @param {Function} [settings.auth]
+ * @returns {Function}
+ */
+export function verifyAuthRedirect(isSecure, {AUTH_SIGNIN, auth}) {
     return async (c, next) => {
+        if (!auth) {
+            if (isSecure) {
+                return c.text('Authentication is not configured', 503);
+            }
+
+            c.set('authUser', null);
+            await next();
+            return;
+        }
+
         const authUser = await getAuthUser(c),
             isAuth = !!authUser?.token || !!authUser?.user;
         if (isSecure && !isAuth) {
