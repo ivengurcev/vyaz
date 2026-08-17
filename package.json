@@ -3,32 +3,30 @@
     "version": "1.0.0",
     "type": "module",
     "dependencies": {
-        "@auth/core": "^0.34.3",
+        "@auth/core": "^0.41.3",
         "@hono/auth-js": "^1.1.1",
-        "@hono/node-server": "^1.19.13",
+        "@hono/node-server": "^2.1.1",
         "@svgr/core": "^8.1.0",
         "@svgr/plugin-jsx": "^8.1.0",
-        "autoprefixer": "^10.4.27",
-        "esbuild": "^0.28.0",
+        "autoprefixer": "^10.5.4",
+        "esbuild": "^0.28.2",
         "esbuild-sass-plugin": "^3.7.0",
-        "hono": "^4.12.12",
+        "hono": "^4.13.2",
         "picocolors": "^1.1.1",
-        "postcss": "^8.5.9",
-        "postcss-modules": "^6.0.1",
-        "sass-embedded": "^1.99.0"
+        "postcss": "^8.5.26",
+        "postcss-modules": "^9.0.1",
+        "sass-embedded": "^1.102.0"
     },
     "peerDependencies": {
         "@hono/auth-js": "^1.1.1",
-        "hono": "^4.12.8",
+        "hono": "^4.13.2",
         "prop-types": "^15.8.1",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-        "reneco-utils": "^0.1.1"
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8"
     },
     "devDependencies": {
         "prop-types": "^15.8.1",
-        "react": "^19.2.5",
-        "react-dom": "^19.2.5",
-        "reneco-utils": "^0.1.1"
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8"
     }
 }

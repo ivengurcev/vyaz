@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import getResult from 'reneco-utils/getResult.js';
+import getResult from './utils/getResult.js';
 import { RESPONSE_ALREADY_SENT } from '@hono/node-server/utils/response';
 import { createElement } from 'react';
 import { serveStatic } from '@hono/node-server/serve-static';
@@ -13,7 +13,7 @@ import { attachAPI } from './server/api.mjs';
 import { attachAuth } from './server/auth.mjs';
 import collectRouteInitialData from './server/collectRouteInitialData.mjs';
 import pc from 'picocolors';
-import parseArgv from 'reneco-utils/parseArgv.js';
+import parseArgv from './utils/parseArgv.js';
 import buildPublic from './builder/buildPublic.mjs';
 import normalizeSettings from './utils/normalizeSettings.mjs';
 import { access } from 'node:fs/promises';
