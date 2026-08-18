@@ -1,4 +1,5 @@
 import { authHandler, initAuthConfig, verifyAuth, getAuthUser } from '@hono/auth-js';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import CredentialsProvider from '@auth/core/providers/credentials';
 
@@ -86,7 +87,12 @@ export async function attachAuth(app, {
     OUTDIR, 
     PAGE_TITLE
 }) {
-    process.loadEnvFile(process.env.APP_ENV_FILE || '.env');
+    const envFile = process.env.APP_ENV_FILE || '.env';
+
+    if (process.env.APP_ENV_FILE || existsSync(envFile)) {
+        process.loadEnvFile(envFile);
+    }
+
     const SSR_DIR = join(resolvePath(OUTDIR), 'ssr');
     // process.env.AUTH_SECRET = AUTH_SECRET;
     process.env.AUTH_TRUST_HOST = 'true';
