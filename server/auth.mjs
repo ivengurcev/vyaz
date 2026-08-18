@@ -79,6 +79,7 @@ export async function attachAuth(app, {
     auth,
     SERVER_URL,
     AUTH_URL,
+    AUTH_SECRET,
     AUTH_SIGNIN,
     LAYOUT_AUTH, 
     PUBLIC_PATH,
@@ -96,6 +97,7 @@ export async function attachAuth(app, {
             c,
             SSR_DIR,
             AUTH_URL,
+            AUTH_SECRET,
             AUTH_SIGNIN,
             CredentialsProvider
         }))
