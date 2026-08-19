@@ -12,7 +12,11 @@ import {
 
 
 function jsonHandler(handler) {
-    return async (c) => c.json(await handler(c));
+    return async (c) => {
+        const result = await handler(c);
+
+        return result instanceof Response ? result : c.json(result);
+    };
 }
 
 function accessMiddleware(hasAccess, requirements = {}) {
