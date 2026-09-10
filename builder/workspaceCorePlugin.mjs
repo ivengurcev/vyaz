@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url),
     __dirname = dirname(__filename),
     CORE_ROOT = dirname(__dirname),
-    CORE_FILTER = /^@farrage\/core(?:\/(.*))?$/;
+    CORE_FILTER = /^@vyaz\/core(?:\/(.*))?$/;
 
 export default function workspaceCorePlugin() {
     return {

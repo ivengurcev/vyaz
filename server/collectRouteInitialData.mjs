@@ -20,7 +20,7 @@ async function resolveImportPath(fromFilePath, importPath) {
         return null;
     }
 
-    if (importPath.startsWith('@farrage/core/')) {
+    if (importPath.startsWith('@vyaz/core/')) {
         return resolvePath(importPath);
     }
 

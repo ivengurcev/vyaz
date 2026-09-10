@@ -1,5 +1,5 @@
 {
-    "name": "@farrage/core",
+    "name": "@vyaz/core",
     "version": "1.0.0",
     "type": "module",
     "dependencies": {

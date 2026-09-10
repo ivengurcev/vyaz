@@ -34,7 +34,19 @@ const KEY_BUILD_SSR = '--build-ssr',
     workspace = process.cwd();
 
 
-export default async function farrage({
+/**
+ * Собирает и/или запускает приложение Vyaz согласно аргументам командной строки.
+ *
+ * В зависимости от флагов создаёт browser/SSR-сборку или запускает HTTP-сервер.
+ *
+ * @param {object} options
+ * @param {Array} [options.routes]
+ * @param {Function} [options.auth]
+ * @param {Array} [options.api]
+ * @param {Function} [options.hasAccess]
+ * @returns {Promise<void>}
+ */
+export default async function createApp({
     routes,
     auth,
     api,

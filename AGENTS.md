@@ -2,15 +2,15 @@
 
 ## Назначение
 
-Этот файл задаёт правила для изменений внутри пакета `@farrage/core`.
+Этот файл задаёт правила для изменений внутри пакета `@vyaz/core`.
 
-`@farrage/core` — это переиспользуемое ядро приложения: runtime, SSR/public build, router/auth/api glue-код, layout-обвязка и служебные утилиты. Это не место для бизнес-логики Enduro-проекта.
+Vyaz (`@vyaz/core`) — это переиспользуемое ядро приложения: runtime, SSR/public build, router/auth/api glue-код, layout-обвязка и служебные утилиты. Это не место для бизнес-логики Enduro-проекта.
 
 ## Роль пакета
 
 Пакет отвечает за:
 
-- запуск Hono-приложения и SSR через `farrage.mjs`;
+- запуск Hono-приложения и SSR через `createApp.mjs`;
 - browser/SSR-сборку через `builder/`;
 - серверную обвязку маршрутов, auth и API через `server/`;
 - базовые React-обвязки и layout-слой через `Layout/`;
@@ -32,33 +32,33 @@
 
 ### 2. Граница между ядром и приложением должна быть жёсткой
 
-- Всё общее и переиспользуемое живёт в `@farrage/core`.
+- Всё общее и переиспользуемое живёт в `@vyaz/core`.
 - Всё проектно-специфичное остаётся в приложении-воркспейсе.
 - Ядро не должно знать про сущности уровня проекта: `Bike`, `Tariff`, `User`, `LandingSettings`, `PERMISSIONS` и т.п.
 
-### 3. Потребители ядра обязаны импортировать его как `@farrage/core`
+### 3. Потребители ядра обязаны импортировать его как `@vyaz/core`
 
-Это правило относится к коду вне `farrage-core/`.
+Это правило относится к коду вне `vyaz/`.
 
 Правильно:
 
 ```js
-import farrage from '@farrage/core/farrage.mjs';
-import ApplicationContext from '@farrage/core/Context.js';
+import createApp from '@vyaz/core/createApp.mjs';
+import ApplicationContext from '@vyaz/core/Context.js';
 ```
 
 Неправильно:
 
 ```js
-import farrage from './farrage-core/farrage.mjs';
-import ApplicationContext from '../farrage-core/Context.js';
+import createApp from './vyaz/createApp.mjs';
+import ApplicationContext from '../vyaz/Context.js';
 ```
 
 ### 4. Внутри ядра относительные self-импорты разрешены
 
-- Внутри `farrage-core/` можно использовать `./...` и `../...`.
-- Внутри `farrage-core/` также разрешены обычные пакетные импорты внешних зависимостей.
-- Не нужно насильно переписывать внутренние self-импорты на `@farrage/core/...`.
+- Внутри `vyaz/` можно использовать `./...` и `../...`.
+- Внутри `vyaz/` также разрешены обычные пакетные импорты внешних зависимостей.
+- Не нужно насильно переписывать внутренние self-импорты на `@vyaz/core/...`.
 
 ### 5. Не импортировать приложение напрямую
 
@@ -66,7 +66,7 @@ import ApplicationContext from '../farrage-core/Context.js';
 
 Разрешённые способы интеграции:
 
-- параметры и callbacks, переданные в `farrage(...)`;
+- параметры и callbacks, переданные в `createApp(...)`;
 - пути к layout/component-файлам из settings;
 - route config и API config, переданные приложением;
 - конвенции workspace-уровня вроде `server.mjs` и `config.mjs`, если они загружаются как расширяемые точки интеграции.
@@ -80,7 +80,7 @@ import apiKeys from '../../api/apiKeys.js';
 
 ## Архитектура по папкам
 
-### `farrage.mjs`
+### `createApp.mjs`
 
 - Главная точка входа пакета.
 - Здесь собираются settings, build-флаги, Hono app, SSR-маршрутизация и main render flow.
@@ -112,7 +112,7 @@ import apiKeys from '../../api/apiKeys.js';
 Перед добавлением нового экспортируемого файла нужно ответить на два вопроса:
 
 - это действительно часть reusable API ядра, а не частная деталь текущего проекта?
-- по этому пути будет удобно и логично импортировать из приложения как `@farrage/core/...`?
+- по этому пути будет удобно и логично импортировать из приложения как `@vyaz/core/...`?
 
 Если ответ хотя бы на один вопрос отрицательный, скорее всего код не должен становиться публичной поверхностью пакета.
 
@@ -122,7 +122,7 @@ import apiKeys from '../../api/apiKeys.js';
 
 - `server.mjs` как серверные callbacks верхнего уровня;
 - `config.mjs`, если проект решит его предоставить;
-- `routes`, `auth`, `api`, `hasAccess` и layout paths, переданные в `farrage(...)`.
+- `routes`, `auth`, `api`, `hasAccess` и layout paths, переданные в `createApp(...)`.
 
 При добавлении новой точки расширения:
 
@@ -155,13 +155,13 @@ import apiKeys from '../../api/apiKeys.js';
 Проверка, что приложение снаружи не импортирует ядро относительными путями:
 
 ```bash
-rg -n "farrage-core/" Components Pages api db models app.mjs routes.mjs auth.mjs
+rg -n "from ['\"](?:\\.\\.?/)+vyaz/" Components Pages api db models app.mjs routes.mjs auth.mjs
 ```
 
 Проверка, что внутри ядра не появились прямые импорты из приложения:
 
 ```bash
-rg -n "\\.\\./\\.\\./(Components|Pages|api|models|db)|from ['\"]/home/" farrage-core
+rg -n "\\.\\./\\.\\./(Components|Pages|api|models|db)|from ['\"]/home/" vyaz
 ```
 
 ## При конфликте правил
@@ -169,6 +169,6 @@ rg -n "\\.\\./\\.\\./(Components|Pages|api|models|db)|from ['\"]/home/" farrage-
 Если локальная реализация противоречит этому файлу, приоритет такой:
 
 1. ядро остаётся reusable и не тянет проектную доменную логику;
-2. приложение импортирует ядро только как `@farrage/core`;
+2. приложение импортирует ядро только как `@vyaz/core`;
 3. внутренние self-импорты ядра можно оставлять относительными;
 4. совместимость назад не добавляется без явной необходимости.

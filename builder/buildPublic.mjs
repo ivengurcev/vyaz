@@ -56,7 +56,7 @@ export default async function buildPublic({routes, ...settings}) {
         // publicPath: `${server.rsc}/`,
         plugins: [
             {
-                name: 'resolve-farrage-paths',
+                name: 'resolve-vyaz-paths',
                 setup(build) {
                     build.onStart(() => {
                         console.log(pc.green('------------------------------ Сборка началась -----------------------------------'));
