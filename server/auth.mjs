@@ -33,8 +33,7 @@ export function verifyAuthRedirect(isSecure, {AUTH_SIGNIN, auth}) {
             }
 
             c.set('authUser', null);
-            await next();
-            return;
+            return await next();
         }
 
         const authUser = await getAuthUser(c),
@@ -44,7 +43,7 @@ export function verifyAuthRedirect(isSecure, {AUTH_SIGNIN, auth}) {
             return c.redirect(loginUrl, 302);
         }
         c.set('authUser', authUser);
-        await next();
+        return await next();
     };    
 }
 
