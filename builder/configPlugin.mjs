@@ -3,6 +3,7 @@ const WORKSPACE_CONFIG = '@@config@@',
     WORKSPACE = process.cwd();
 
 export default function getConfigPlugin({
+    auth,
     API_ROOT,
     AUTH_URL,
     AUTH_SIGNIN,
@@ -20,6 +21,7 @@ export default function getConfigPlugin({
             });
             build.onLoad({ filter: /.*$/, namespace: WORKSPACE_CONFIG }, async () => {
                 const config = {
+                        AUTH_ENABLED: Boolean(auth),
                         AUTH_BASE_URL: AUTH_URL,
                         API_BASE_URL: API_ROOT,
                         ASSET_PUBLIC_BASE_URL: ASSET_PUBLIC_BASE,

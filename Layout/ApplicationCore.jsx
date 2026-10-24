@@ -2,12 +2,13 @@ import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import ApplicationContext from '../Context.js';
 import { SessionProvider, useSession } from '@hono/auth-js/react';
+import { AUTH_ENABLED } from '__config__';
 import normalizeRouteComponent from './normalizeRouteComponent.js';
 
 import '../authSetup.js';
 
 function AuthProvider({children}) {
-    return typeof window === 'undefined'  
+    return !AUTH_ENABLED || typeof window === 'undefined'
         ? children
         : <SessionProvider>{children}</SessionProvider>;
 }
@@ -15,15 +16,7 @@ AuthProvider.propTypes = {
     children: PropTypes.node,
 };
 
-function ApplicationStateProvider({
-    children,
-    routeComponent,
-    user,
-    setUser,
-    initialData,
-    pathname,
-    navigate,
-}) {
+function SessionSync({ setUser }) {
     const session = useSession();
 
     useEffect(() => {
@@ -46,6 +39,21 @@ function ApplicationStateProvider({
             };
         });
     }, [session, setUser]);
+    return null;
+}
+SessionSync.propTypes = {
+    setUser: PropTypes.func,
+};
+
+function ApplicationStateProvider({
+    children,
+    routeComponent,
+    user,
+    setUser,
+    initialData,
+    pathname,
+    navigate,
+}) {
     return (
         <ApplicationContext.Provider
             value={{
@@ -57,6 +65,7 @@ function ApplicationStateProvider({
                 navigate,
             }}
         >
+            {AUTH_ENABLED && <SessionSync setUser={setUser} />}
             {children}
         </ApplicationContext.Provider>
     );
