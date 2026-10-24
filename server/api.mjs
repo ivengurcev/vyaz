@@ -19,14 +19,18 @@ function jsonHandler(handler) {
     };
 }
 
+export async function checkAccess(hasAccess, authUser, requirements, c) {
+    return !hasAccess || await hasAccess(authUser, requirements, c);
+}
+
 function accessMiddleware(hasAccess, requirements = {}) {
     return async (c, next) => {
         const authUser = await getAuthUser(c);
-        if (hasAccess && !(await hasAccess(authUser, requirements))) {
+        if (!(await checkAccess(hasAccess, authUser, requirements, c))) {
             return c.json({ error: 'Доступ запрещён' }, 403);
         }
         c.set('authUser', authUser)
-        await next()
+        return await next()
     }
 }
 

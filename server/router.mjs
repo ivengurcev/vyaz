@@ -13,7 +13,7 @@ export async function attachRouter(app, {routes, hasAccess, ...settings}) {
                     const {session} = c.get('authUser') || {},
                         user = session?.user,
                         accessGranted = hasAccess
-                            ? await hasAccess(user, route)
+                            ? await hasAccess(user, route, c)
                             : true;
                     if (!accessGranted) {
                         return c.text('Недостаточно прав для доступа к странице', 403);
