@@ -3,7 +3,7 @@ import { basename, dirname, extname, isAbsolute, resolve } from 'node:path';
 import { transform } from '@svgr/core';
 import jsxPlugin from '@svgr/plugin-jsx';
 
-const SVG_FILTER = /\.svg$/;
+const SVG_FILTER = /\.svg(?:\?react)?$/;
 const JS_ISSUER_FILTER = /\.[cm]?[jt]sx?$/;
 
 function toComponentName(filePath) {
@@ -25,10 +25,12 @@ export default function svgrPlugin() {
                     return null;
                 }
 
+                const svgPath = args.path.replace(/\?react$/, '');
+
                 return {
-                    path: isAbsolute(args.path)
-                        ? args.path
-                        : resolve(args.resolveDir, args.path),
+                    path: isAbsolute(svgPath)
+                        ? svgPath
+                        : resolve(args.resolveDir, svgPath),
                     namespace: 'svgr-component',
                 };
             });
