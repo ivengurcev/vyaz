@@ -10,7 +10,6 @@ export default function getStringRoutes(routes, isServerBuild) {
                             result.push(`\t${key}: () => import('${resolvePath(route[key])}')`);
                         }
                         break;
-                    case 'isServer':
                     case 'hasAccess': 
                     case 'getData': 
                         break;

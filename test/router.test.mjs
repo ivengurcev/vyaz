@@ -76,6 +76,35 @@ test('passes Hono context to page access checks and supports two-argument callba
     assert.equal((await twoArgumentApp.request('/legacy')).status, 200);
 });
 
+test('preserves Hono params for dynamic routes in access checks and getData', async () => {
+    const app = new Hono();
+    let accessId,
+        dataId;
+
+    await attachRouter(app, {
+        routes: [{
+            path: '/materials/:id',
+            component: async () => ({ default: () => null }),
+            getData(c) {
+                dataId = c.req.param('id');
+                return { id: dataId };
+            },
+        }],
+        hasAccess(user, route, c) {
+            accessId = c.req.param('id');
+            return true;
+        },
+        AUTH_SIGNIN: '/auth/signin',
+    });
+    app.get('*', (c) => c.json(c.get('initialData')));
+
+    assert.deepEqual(await (await app.request('/materials/material-42')).json(), {
+        id: 'material-42',
+    });
+    assert.equal(accessId, 'material-42');
+    assert.equal(dataId, 'material-42');
+});
+
 test('matches a CSR route without importing its component or preparing SSR data', async () => {
     const app = new Hono();
     let componentImports = 0,
