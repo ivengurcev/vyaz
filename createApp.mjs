@@ -16,6 +16,7 @@ import pc from 'picocolors';
 import parseArgv from './utils/parseArgv.js';
 import buildPublic from './builder/buildPublic.mjs';
 import normalizeSettings from './utils/normalizeSettings.mjs';
+import getExistingStyles from './utils/getExistingStyles.mjs';
 import { access } from 'node:fs/promises';
 
 const KEY_BUILD_SSR = '--build-ssr',
@@ -170,6 +171,7 @@ export default async function createApp({
                 ...(collectedInitialData || {}),
                 ...(routeInitialData || {}),
             },
+            styles = await getExistingStyles(normalizedSettings),
             content = disableSSR ? null : createElement(AppCore.default, { // AppCore
                 path: location, 
                 component: ContentComponent,
@@ -184,10 +186,7 @@ export default async function createApp({
             stream = renderToPipeableStream(createElement(Layout.default, { // Layout(HTML)
                 title: cTitle ? getResult(cTitle, PAGE_TITLE) : PAGE_TITLE,
                 scripts: [join(PUBLIC_PATH, 'index.js')],
-                styles: [
-                    join(PUBLIC_PATH, 'index.css'),
-                    join(PUBLIC_PATH, 'SiteApp.css')
-                ],
+                styles,
                 apiData: initialData
             }, content), '');
         stream.pipe(c.env.outgoing);
