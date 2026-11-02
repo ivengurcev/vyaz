@@ -1,4 +1,4 @@
-import { hydrateRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import { createElement } from 'react';
 import normalizeRouteComponent from '../Layout/normalizeRouteComponent.js';
 import router from '__router__';
@@ -25,12 +25,10 @@ async function hydrateApplication() {
         ]),
         initialData = getInitialData(),
         initialRoute = router.resolve(window.location),
-        InitialComponent = normalizeRouteComponent(await initialRoute.component());
-
-    hydrateRoot(
-        document.getElementById('root'),
-        createElement(AppCore.default, { // AppCore
-            path: location, 
+        InitialComponent = normalizeRouteComponent(await initialRoute.component()),
+        root = document.getElementById('root'),
+        application = createElement(AppCore.default, { // AppCore
+            path: location,
             router,
             component: InitialComponent,
             user: initialData?.user || null,
@@ -38,9 +36,14 @@ async function hydrateApplication() {
         }, createElement(App.default, {
             path: location
         }, createElement(CurrentRoute.default, {
-            path: location, 
+            path: location,
             component: InitialComponent
-        })))
-    );
+        })));
+
+    if (initialRoute.disableSSR) {
+        createRoot(root).render(application);
+    } else {
+        hydrateRoot(root, application);
+    }
 }
 hydrateApplication();

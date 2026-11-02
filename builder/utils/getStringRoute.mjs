@@ -7,7 +7,9 @@ export default function getStringRoutes(routes, isServer) {
             + Object.keys(route).reduce((result, key) => {
                 switch (key) {
                     case 'component': 
-                        result.push(`\t${key}: () => import('${resolvePath(route[key])}')`);
+                        if(!isServer || !route.disableSSR) {
+                            result.push(`\t${key}: () => import('${resolvePath(route[key])}')`);
+                        }
                         break;
                     case 'hasAccess': 
                     case 'getData': 

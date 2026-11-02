@@ -150,12 +150,13 @@ export default async function createApp({
             ]),
             cTitle = c.get('currentRouteTitle'),
             ContentComponent = c.get('currentRoute'),
+            disableSSR = c.get('disableSSR'),
             location = new URL(c.req.url),
             {session} = c.get('authUser') || {},
             user = session?.user,
-            routeInitialData = await Promise.resolve(c.get('initialData')),
+            routeInitialData = disableSSR ? undefined : await Promise.resolve(c.get('initialData')),
             routeComponentPath = c.get('currentRouteComponentPath'),
-            collectedInitialData = await collectRouteInitialData(app, c, {
+            collectedInitialData = disableSSR ? undefined : await collectRouteInitialData(app, c, {
                 API_ROOT: normalizedSettings.API_ROOT,
                 componentPath: routeComponentPath,
                 api,
@@ -165,7 +166,7 @@ export default async function createApp({
                 ...(collectedInitialData || {}),
                 ...(routeInitialData || {}),
             },
-            content = createElement(AppCore.default, { // AppCore
+            content = disableSSR ? null : createElement(AppCore.default, { // AppCore
                 path: location, 
                 component: ContentComponent,
                 user,
