@@ -33,3 +33,19 @@ test('returns no stylesheet links when the build emitted no CSS', async () => {
         await rm(outdir, { recursive: true, force: true });
     }
 });
+
+test('checks a caller-provided stylesheet list for the auth page', async () => {
+    const outdir = await mkdtemp(join(tmpdir(), 'vyaz-styles-')),
+        publicDir = join(outdir, 'public');
+    await mkdir(publicDir);
+
+    try {
+        await writeFile(join(publicDir, 'Auth.css'), '');
+        assert.deepEqual(await getExistingStyles(
+            {OUTDIR: outdir, PUBLIC_PATH: '/public'},
+            ['SiteApp.css', 'Auth.css'],
+        ), ['/public/Auth.css']);
+    } finally {
+        await rm(outdir, { recursive: true, force: true });
+    }
+});

@@ -10,6 +10,7 @@ import {renderToPipeableStream} from 'react-dom/server';
 
 // import picocolors from 'picocolors';
 import resolvePath from '../builder/utils/resolvePath.mjs';
+import getExistingStyles from '../utils/getExistingStyles.mjs';
 
 
 /**
@@ -110,16 +111,14 @@ export async function attachAuth(app, {
 
     if(LAYOUT_AUTH.length > 0) {
         app.get(AUTH_SIGNIN, async (c) => {
-            const [Layout] = await Promise.all([
+            const [Layout, styles] = await Promise.all([
                     import(join(SSR_DIR, 'Layout.js')),
+                    getExistingStyles({OUTDIR, PUBLIC_PATH}, ['SiteApp.css', 'Auth.css']),
                 ]), 
                 stream = renderToPipeableStream(createElement(Layout.default, {
                     title: `${PAGE_TITLE}: Авторизация`,
                     scripts: [join(PUBLIC_PATH, 'index_auth.js')],
-                    styles: [
-                        join(PUBLIC_PATH, 'SiteApp.css'), 
-                        join(PUBLIC_PATH, 'Auth.css')
-                    ],                
+                    styles,
                 }), '');
             stream.pipe(c.env.outgoing);
             return RESPONSE_ALREADY_SENT;
