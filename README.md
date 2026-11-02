@@ -260,6 +260,11 @@ const routes = [
 - переходы назад и вперёд через `popstate`;
 - динамическую загрузку компонентов.
 
+В контексте также доступен `setNavigationGuard(guard)`. Приложение может
+зарегистрировать callback `( { from, to, type } ) => boolean | Promise<boolean>`;
+возврат `false` отменяет `navigate()` и переход между записями History API.
+`type` равен `navigate` или `popstate`.
+
 Если маршрут не найден в клиентском роутере, выполняется обычный переход браузера.
 
 ## API
@@ -455,6 +460,7 @@ initialData.userProfile
 | `initialData` | Начальные данные |
 | `pathname` | Текущий путь |
 | `navigate` | Клиентская навигация |
+| `setNavigationGuard` | Регистрация проверки клиентских переходов и Back/Forward |
 
 Контекст создаётся в `Layout/ApplicationCore.jsx`.
 

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ApplicationContext from '../Context.js';
 import { SessionProvider, useSession } from '@hono/auth-js/react';
 import { AUTH_ENABLED } from '__config__';
@@ -52,7 +52,9 @@ function ApplicationStateProvider({
     setUser,
     initialData,
     pathname,
+    search,
     navigate,
+    setNavigationGuard,
 }) {
     return (
         <ApplicationContext.Provider
@@ -62,7 +64,9 @@ function ApplicationStateProvider({
                 setUser,
                 initialData: initialData || {},
                 pathname,
+                search,
                 navigate,
+                setNavigationGuard,
             }}
         >
             {AUTH_ENABLED && <SessionSync setUser={setUser} />}
@@ -77,7 +81,9 @@ ApplicationStateProvider.propTypes = {
     setUser: PropTypes.func,
     initialData: PropTypes.any,
     pathname: PropTypes.string,
+    search: PropTypes.string,
     navigate: PropTypes.func,
+    setNavigationGuard: PropTypes.func,
 };
 
 
@@ -97,7 +103,20 @@ export default function ApplicationCore({
 }) {
     const [routeComponent, setRouteComponent] = useState(() => normalizeRouteComponent(initialComponent)),
         [pathname, setPathname] = useState(path?.pathname || '/'),
+        [search, setSearch] = useState(path?.search || ''),
         [user, setUser] = useState(initialUser || null);
+    const [navigationGuard, setNavigationGuardState] = useState(null);
+    const setNavigationGuard = useCallback((guard) => {
+        if (guard !== null && typeof guard !== 'function') {
+            throw new TypeError('Navigation guard must be a function or null.');
+        }
+        setNavigationGuardState(() => guard);
+    }, []);
+    const navigationGuardRef = useRef(navigationGuard);
+    const historyIndexRef = useRef(0);
+    const restoringHistoryRef = useRef(false);
+
+    useEffect(() => { navigationGuardRef.current = navigationGuard; }, [navigationGuard]);
 
     async function navigate(href, options = {}) {
         if (typeof window === 'undefined' || !router) {
@@ -107,6 +126,12 @@ export default function ApplicationCore({
         const targetUrl = new URL(href, window.location.origin),
             nextRoute = router.resolve(targetUrl);
 
+        if (!options.skipGuard && navigationGuardRef.current && !await navigationGuardRef.current({
+            from: new URL(window.location.href),
+            to: targetUrl,
+            type: 'navigate',
+        })) return;
+
         if (!nextRoute?.component) {
             window.location.href = href;
             return;
@@ -115,18 +140,26 @@ export default function ApplicationCore({
         const nextComponent = await nextRoute.component();
 
         if (options.replace) {
-            window.history.replaceState({}, '', targetUrl);
+            window.history.replaceState({ ...window.history.state, __vyazIndex: historyIndexRef.current }, '', targetUrl);
         } else {
-            window.history.pushState({}, '', targetUrl);
+            historyIndexRef.current += 1;
+            window.history.pushState({ __vyazIndex: historyIndexRef.current }, '', targetUrl);
         }
 
         setPathname(targetUrl.pathname);
+        setSearch(targetUrl.search);
         setRouteComponent(() => normalizeRouteComponent(nextComponent));
     }
 
     useEffect(() => {
         if (typeof window === 'undefined' || !router) {
             return undefined;
+        }
+
+        if (typeof window.history.state?.__vyazIndex === 'number') {
+            historyIndexRef.current = window.history.state.__vyazIndex;
+        } else {
+            window.history.replaceState({ ...window.history.state, __vyazIndex: historyIndexRef.current }, '', window.location.href);
         }
 
         async function syncRoute() {
@@ -139,10 +172,31 @@ export default function ApplicationCore({
             const nextComponent = await nextRoute.component();
 
             setPathname(window.location.pathname);
+            setSearch(window.location.search);
             setRouteComponent(() => normalizeRouteComponent(nextComponent));
         }
 
-        function handlePopState() {
+        async function handlePopState(event) {
+            if (restoringHistoryRef.current) {
+                restoringHistoryRef.current = false;
+            } else if (navigationGuardRef.current && !await navigationGuardRef.current({
+                from: new URL(`${pathname}${search}`, window.location.origin),
+                to: new URL(window.location.href),
+                type: 'popstate',
+            })) {
+                const targetIndex = event.state?.__vyazIndex;
+                const delta = typeof targetIndex === 'number' ? historyIndexRef.current - targetIndex : 0;
+                if (delta) {
+                    restoringHistoryRef.current = true;
+                    window.history.go(delta);
+                } else {
+                    restoringHistoryRef.current = true;
+                    window.history.forward();
+                }
+                return;
+            }
+
+            if (typeof event.state?.__vyazIndex === 'number') historyIndexRef.current = event.state.__vyazIndex;
             syncRoute();
         }
 
@@ -151,7 +205,7 @@ export default function ApplicationCore({
         return () => {
             window.removeEventListener('popstate', handlePopState);
         }
-    }, [router]);
+    }, [router, pathname, search]);
 
     return (<AuthProvider>
         <ApplicationStateProvider
@@ -160,7 +214,9 @@ export default function ApplicationCore({
             setUser={setUser}
             initialData={initialData}
             pathname={pathname}
+            search={search}
             navigate={navigate}
+            setNavigationGuard={setNavigationGuard}
         >
             {children}
         </ApplicationStateProvider>
