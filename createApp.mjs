@@ -142,6 +142,10 @@ export default async function createApp({
      * Главный маршрут
      */
     app.get('/*', async (c) => {
+        if(!c.get('currentRouteMatched')) {
+            return c.notFound();
+        }
+
         const [Layout, AppCore, App, CurrentRoute] = await Promise.all([
                 import(LAYOUT_SSR_PATH),
                 import(APP_CORE_SSR_PATH),

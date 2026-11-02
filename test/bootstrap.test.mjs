@@ -3,7 +3,7 @@ import test from 'node:test';
 import { build } from 'esbuild';
 import { fileURLToPath } from 'node:url';
 
-async function runBootstrap(disableSSR) {
+async function runBootstrap(disableSSR, routeFound = true) {
     const result = await build({
         entryPoints: [fileURLToPath(new URL('../builder/__bootstrap.js', import.meta.url))],
         bundle: true,
@@ -36,10 +36,10 @@ async function runBootstrap(disableSSR) {
                         return { contents: 'export default component => component?.default || component;', loader: 'js' };
                     }
                     if (path === '__router__') {
-                        return { contents: `export default { resolve() { return {
+                        return { contents: `export default { resolve() { return ${routeFound ? `{
                             disableSSR: ${disableSSR},
                             component: async () => ({ default: function Page() {} }),
-                        }; } };`, loader: 'js' };
+                        }` : 'null'}; } };`, loader: 'js' };
                     }
                     return { contents: 'export default function Component() {}', loader: 'js' };
                 });
@@ -75,4 +75,12 @@ test('initial SSR route hydrates the existing server markup', async () => {
     assert.equal(calls.create, 0);
     assert.equal(calls.hydrate, 1);
     assert.ok(calls.rendered);
+});
+
+test('missing initial route does not initialize React or load a page component', async () => {
+    const calls = await runBootstrap(false, false);
+
+    assert.equal(calls.create, 0);
+    assert.equal(calls.hydrate, 0);
+    assert.equal(calls.rendered, null);
 });

@@ -1,16 +1,16 @@
 import resolvePath from './resolvePath.mjs';
 
-export default function getStringRoutes(routes, isServer) {
+export default function getStringRoutes(routes, isServerBuild) {
     return '[\n' + routes
-        .filter(({isServer: is}) => isServer || !is)
         .map(route => '{\n' 
             + Object.keys(route).reduce((result, key) => {
                 switch (key) {
                     case 'component': 
-                        if(!isServer || !route.disableSSR) {
+                        if(!isServerBuild || !route.disableSSR) {
                             result.push(`\t${key}: () => import('${resolvePath(route[key])}')`);
                         }
                         break;
+                    case 'isServer':
                     case 'hasAccess': 
                     case 'getData': 
                         break;

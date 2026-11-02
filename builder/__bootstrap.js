@@ -18,13 +18,17 @@ function getInitialData() {
 }
 
 async function hydrateApplication() {
+    const initialRoute = router.resolve(window.location);
+    if (!initialRoute) {
+        return;
+    }
+
     const [AppCore, App, CurrentRoute] = await Promise.all([
             import('./AppCore.js'),
             import('./SiteApp.js'),
             import('./CurrentRoute.js')
         ]),
         initialData = getInitialData(),
-        initialRoute = router.resolve(window.location),
         InitialComponent = normalizeRouteComponent(await initialRoute.component()),
         root = document.getElementById('root'),
         application = createElement(AppCore.default, { // AppCore

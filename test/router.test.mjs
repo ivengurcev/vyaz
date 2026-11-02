@@ -122,7 +122,7 @@ test('matches a CSR route without importing its component or preparing SSR data'
     assert.equal(accessCalls, 1);
 });
 
-test('client route matching prefers static paths over overlapping dynamic paths', () => {
+test('client route matching preserves route array order for overlapping paths', () => {
     const router = createRouter([
         { path: '/persons/:personId' },
         { path: '/persons/new' },
@@ -130,11 +130,14 @@ test('client route matching prefers static paths over overlapping dynamic paths'
         { path: '/persons/:personId/edit' },
     ]);
 
-    assert.equal(router.resolve(new URL('http://localhost/persons/new')).path, '/persons/new');
-    assert.equal(router.resolve(new URL('http://localhost/persons/17/edit')).path, '/persons/:personId/edit');
+    assert.equal(router.resolve(new URL('http://localhost/persons/new')).path, '/persons/:personId');
+    assert.equal(router.resolve(new URL('http://localhost/persons/17/edit')).path, '/:section/:item/edit');
+
+    assert.equal(createRouter([{ path: '/admin/*' }])
+        .resolve(new URL('http://localhost/admin/settings/profile')).path, '/admin/*');
 });
 
-test('server routing prefers the more specific intersecting dynamic path', async () => {
+test('server routing preserves order for intersecting dynamic paths', async () => {
     const app = new Hono();
 
     await attachRouter(app, {
@@ -154,7 +157,55 @@ test('server routing prefers the more specific intersecting dynamic path', async
     });
     app.get('*', (c) => c.text(c.get('currentRouteTitle')));
 
-    assert.equal(await (await app.request('/persons/17/edit')).text(), 'Person edit');
+    assert.equal(await (await app.request('/persons/17/edit')).text(), 'Generic edit');
+});
+
+test('server routing preserves array order for overlapping static and dynamic paths', async () => {
+    const app = new Hono();
+
+    await attachRouter(app, {
+        routes: [
+            {
+                path: '/persons/:personId',
+                component: async () => ({ default: () => null }),
+                title: 'Dynamic person',
+            },
+            {
+                path: '/persons/new',
+                component: async () => ({ default: () => null }),
+                title: 'Static new person',
+            },
+        ],
+        AUTH_SIGNIN: '/auth/signin',
+    });
+    app.get('*', (c) => c.text(c.get('currentRouteTitle')));
+
+    assert.equal(await (await app.request('/persons/new')).text(), 'Dynamic person');
+});
+
+test('an unknown server path falls through without importing a route component', async () => {
+    const app = new Hono();
+    let componentImports = 0;
+
+    await attachRouter(app, {
+        routes: [{
+            path: '/known',
+            component: async () => {
+                componentImports++;
+                return { default: () => null };
+            },
+        }],
+        AUTH_SIGNIN: '/auth/signin',
+    });
+    app.get('/*', (c) => c.get('currentRouteMatched')
+        ? c.text('SSR')
+        : c.notFound());
+    app.notFound((c) => c.text('Not found', 404));
+
+    const response = await app.request('/unknown');
+
+    assert.equal(response.status, 404);
+    assert.equal(componentImports, 0);
 });
 
 test('a private CSR route still requires configured authentication', async () => {

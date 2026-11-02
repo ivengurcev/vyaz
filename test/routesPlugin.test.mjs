@@ -13,6 +13,7 @@ test('SSR route metadata excludes CSR component imports while the client keeps t
     const routes = [
         { path: '/admin', component: './Pages/Admin.jsx', disableSSR: true, title: 'Admin' },
         { path: '/home', component: './Pages/Home.jsx' },
+        { path: '/legacy-server', component: './Pages/Legacy.jsx', isServer: true },
     ];
 
     const serverRoutes = getStringRoute(routes, true),
@@ -22,7 +23,12 @@ test('SSR route metadata excludes CSR component imports while the client keeps t
     assert.match(serverRoutes, /disableSSR: true/);
     assert.doesNotMatch(serverRoutes, /Pages\/Admin\.jsx/);
     assert.match(serverRoutes, /Pages\/Home\.jsx/);
+    assert.match(serverRoutes, /path: "\/legacy-server"/);
+    assert.match(serverRoutes, /Pages\/Legacy\.jsx/);
     assert.match(clientRoutes, /Pages\/Admin\.jsx/);
+    assert.match(clientRoutes, /Pages\/Legacy\.jsx/);
+    assert.doesNotMatch(serverRoutes, /isServer/);
+    assert.doesNotMatch(clientRoutes, /isServer/);
 });
 
 test('the HTML layout renders an empty root while retaining title, assets, and auth data', () => {
