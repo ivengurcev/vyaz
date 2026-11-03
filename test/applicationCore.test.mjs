@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { createElement } from 'react';
+import { createElement, useContext } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { build } from 'esbuild';
 import getConfigPlugin from '../builder/configPlugin.mjs';
@@ -71,3 +71,105 @@ for (const platform of ['browser', 'node']) {
         });
     }
 }
+
+test('navigate applies guards, skips the current URL, and preserves changed search and hash', async () => {
+    const result = await build({
+        stdin: {
+            contents: `
+                export { default } from '../Layout/ApplicationCore.jsx';
+                export { default as Context } from '../Context.js';
+            `,
+            resolveDir: fileURLToPath(new URL('.', import.meta.url)),
+        },
+        bundle: true,
+        write: false,
+        format: 'cjs',
+        platform: 'node',
+        jsx: 'automatic',
+        external: ['react', 'react/jsx-runtime', 'prop-types'],
+        plugins: [getConfigPlugin({})],
+    });
+    const previousWindow = globalThis.window;
+    globalThis.window = { location: { origin: 'http://localhost', href: 'http://localhost/admin?section=appearance' } };
+    const module = { exports: {} };
+    new Function('require', 'module', 'exports', result.outputFiles[0].text)(require, module, module.exports);
+
+    let appContext,
+        routeResolutions = 0,
+        componentLoads = 0,
+        guardCalls = 0,
+        historyWrites = 0,
+        resolvedSearch = '';
+    globalThis.window = {
+        location: {
+            origin: 'http://localhost',
+            href: 'http://localhost/admin?section=appearance',
+        },
+        history: {
+            state: {},
+            pushState(state, _title, url) {
+                this.state = state;
+                historyWrites += 1;
+                globalThis.window.location.href = new URL(url).href;
+            },
+            replaceState(state, _title, url) {
+                this.state = state;
+                historyWrites += 1;
+                globalThis.window.location.href = new URL(url).href;
+            },
+        },
+    };
+
+    try {
+        function CaptureContext() {
+            appContext = useContext(module.exports.Context);
+            return null;
+        }
+
+        const router = {
+            resolve(url) {
+                routeResolutions += 1;
+                resolvedSearch = url.search;
+                return {
+                    component: async () => {
+                        componentLoads += 1;
+                        return { default: function Page() {} };
+                    },
+                };
+            },
+        };
+        renderToStaticMarkup(createElement(
+            module.exports.default,
+            { path: { pathname: '/admin', search: '?section=appearance' }, router },
+            createElement(CaptureContext),
+        ));
+
+        appContext.setNavigationGuard(() => { guardCalls += 1; return false; });
+        await appContext.navigate('/admin?section=appearance');
+        assert.equal(routeResolutions, 0);
+        assert.equal(guardCalls, 0);
+        assert.equal(componentLoads, 0);
+        assert.equal(historyWrites, 0);
+
+        await appContext.navigate('/admin/pages');
+        assert.equal(guardCalls, 1);
+        assert.equal(componentLoads, 0);
+        assert.equal(historyWrites, 0);
+
+        appContext.setNavigationGuard(() => { guardCalls += 1; return true; });
+        await appContext.navigate('/admin/pages');
+        assert.equal(componentLoads, 1);
+        assert.equal(historyWrites, 1);
+
+        appContext.setNavigationGuard(() => { guardCalls += 1; return false; });
+        await appContext.navigate('/admin/pages?section=contacts#details', { skipGuard: true });
+        assert.equal(guardCalls, 2);
+        assert.equal(componentLoads, 2);
+        assert.equal(historyWrites, 2);
+        assert.equal(resolvedSearch, '?section=contacts');
+        assert.equal(globalThis.window.location.href, 'http://localhost/admin/pages?section=contacts#details');
+    } finally {
+        if (previousWindow === undefined) delete globalThis.window;
+        else globalThis.window = previousWindow;
+    }
+});

@@ -105,26 +105,26 @@ export default function ApplicationCore({
         [pathname, setPathname] = useState(path?.pathname || '/'),
         [search, setSearch] = useState(path?.search || ''),
         [user, setUser] = useState(initialUser || null);
-    const [navigationGuard, setNavigationGuardState] = useState(null);
+    const navigationGuardRef = useRef(null);
     const setNavigationGuard = useCallback((guard) => {
         if (guard !== null && typeof guard !== 'function') {
             throw new TypeError('Navigation guard must be a function or null.');
         }
-        setNavigationGuardState(() => guard);
+        navigationGuardRef.current = guard;
     }, []);
-    const navigationGuardRef = useRef(navigationGuard);
     const historyIndexRef = useRef(0);
     const restoringHistoryRef = useRef(false);
 
-    useEffect(() => { navigationGuardRef.current = navigationGuard; }, [navigationGuard]);
-
-    async function navigate(href, options = {}) {
+    const navigate = useCallback(async (href, options = {}) => {
         if (typeof window === 'undefined' || !router) {
             return;
         }
 
-        const targetUrl = new URL(href, window.location.origin),
-            nextRoute = router.resolve(targetUrl);
+        const targetUrl = new URL(href, window.location.origin);
+
+        if (targetUrl.href === window.location.href) return;
+
+        const nextRoute = router.resolve(targetUrl);
 
         if (!options.skipGuard && navigationGuardRef.current && !await navigationGuardRef.current({
             from: new URL(window.location.href),
@@ -149,7 +149,7 @@ export default function ApplicationCore({
         setPathname(targetUrl.pathname);
         setSearch(targetUrl.search);
         setRouteComponent(() => normalizeRouteComponent(nextComponent));
-    }
+    }, [router]);
 
     useEffect(() => {
         if (typeof window === 'undefined' || !router) {

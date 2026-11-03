@@ -459,6 +459,7 @@ initialData.userProfile
 | `setUser` | Изменение состояния пользователя |
 | `initialData` | Начальные данные |
 | `pathname` | Текущий путь |
+| `search` | Строка query-параметров текущего URL |
 | `navigate` | Клиентская навигация |
 | `setNavigationGuard` | Регистрация проверки клиентских переходов и Back/Forward |
 
